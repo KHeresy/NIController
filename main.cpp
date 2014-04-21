@@ -196,16 +196,16 @@ private:
 			{
 				// compute the face direction
 				auto& rQ = rTorso.getOrientation();
-				Eigen::Vector3f vZD( 0, 0, -1 );
-				auto vZ = Eigen::Quaternionf( rQ.w, rQ.x, rQ.y, rQ.z ) * vZD;
+				QVector3D vZD( 0, 0, -1 );
+				auto vZ = QQuaternion( rQ.w, rQ.x, rQ.y, rQ.z ).rotatedVector( vZD );
 				
 				// ignore Y axis
-				Eigen::Vector2f v2DDir = Eigen::Vector2f( vZ[0], vZ[2] ).normalized();
-				m_pDirection->m_vDir.setX( v2DDir[0] );
-				m_pDirection->m_vDir.setY( v2DDir[1] );
+				QVector2D v2DDir = QVector2D( vZ.x(), vZ.z() ).normalized();
+				m_pDirection->m_vDir.setX( v2DDir.x() );
+				m_pDirection->m_vDir.setY( v2DDir.y() );
 
 				// check if face the sensor
-				if( v2DDir[1] < -g_fFaceCond )
+				if( v2DDir.y() < -g_fFaceCond )
 				{
 					const auto& rRHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND );
 					const auto& rLHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND );
