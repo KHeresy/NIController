@@ -10,6 +10,47 @@
 #include <OpenNI.h>
 #include <NiTE.h>
 
+/**
+ * The QGraphicsItem to draw user face direction
+ */
+class QDirection : public QGraphicsItem
+{
+public:
+	QDirection( int uSize ) : QGraphicsItem()
+	{
+		m_qRect = QRectF( QPointF( 0, 0 ), QSizeF(uSize,uSize) );
+		m_vDir = QVector2D( 0, -1 );
+	}
+
+	QRectF boundingRect() const
+	{
+		return m_qRect;
+	}
+
+	void paint( QPainter *painter,  const QStyleOptionGraphicsItem *option, QWidget *widget )
+	{
+		// p1
+		QPen pen( qRgb( 255, 255, 0 ) );
+		pen.setWidth( 3 );
+		painter->setPen( pen );
+		painter->drawEllipse( m_qRect );
+
+		// p2
+		pen.setColor( qRgb( 255, 0, 0 ) );
+		painter->setPen( pen );
+		pen.setWidth( 5 );
+		float r = m_qRect.width() / 2;
+		painter->drawLine( r, r, r + r * m_vDir.x(), r + r * m_vDir.y() );
+	}
+
+public:
+	QRectF		m_qRect;
+	QVector2D	m_vDir;
+};
+
+/**
+ * The user skeleton
+ */
 class QONI_Skeleton : public QGraphicsItem
 {
 public:
@@ -27,6 +68,9 @@ public:
 	std::array<QPointF,15>	m_aJoint2D;
 };
 
+/**
+ * User Map
+ */
 class QONI_UserMap : public QGraphicsItemGroup
 {
 public:
