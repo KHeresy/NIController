@@ -1,15 +1,16 @@
 Requirement:
 
-1. OpenNI 2:
+1. Visual Studio (2010) & Winodws SDK
+	for keyboard / mouse simulation
+
+2. OpenNI 2:
 	https://github.com/OpenNI/OpenNI2
 
-2. PrimeSense NiTE 2:
+3. PrimeSense NiTE 2:
 	Human skeleton tracking
 	No longer variable
 
-3. Qt:
+4. Qt:
 	GUI and matirx computing
 	http://qt-project.org/
 
-4. Winodws SDK
-	for keyboard / mouse simulation
