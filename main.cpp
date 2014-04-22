@@ -5,10 +5,6 @@
 #include <iostream>
 #include <sstream>
 
-// Eigen
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-
 // Qt Header
 #include <QtGui/QtGui>
 
