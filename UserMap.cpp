@@ -30,8 +30,22 @@ void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *o
 	painter->drawLine( m_aJoint2D[12], m_aJoint2D[14] );
 
 	// draw joints
-	for( auto itP = m_aJoint2D.begin(); itP != m_aJoint2D.end(); ++ itP )
-		painter->drawEllipse( *itP, 5, 5 );
+	for( int i = 0; i < m_aJoint2D.size(); ++ i )
+	{
+		float fD = m_aJointRotated[i].z();
+		if( fD > 0 )
+		{
+			painter->setPen( pen );
+		}
+		else
+		{
+			fD = min( 1.0f, -fD / 500 );
+			QPen pen1( qRgba( fD * 255, fD * 255, 64, 255 ) );
+			pen1.setWidth( 3 );
+			painter->setPen( pen1 );
+		}
+		painter->drawEllipse( m_aJoint2D[i], 5, 5 );
+	}
 }
 
 void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
