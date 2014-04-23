@@ -20,8 +20,6 @@
 #include <Windows.h>
 #pragma endregion
 
-float g_fFaceCond = 0.8;
-
 /**
  * Keyboard simulator
  */
@@ -65,10 +63,6 @@ public:
 
 		m_pButtons		= new QGraphicsItemGroup();
 		m_qScene.addItem( m_pButtons );
-
-		m_pDirection = new QDirection( 40 );
-		m_qScene.addItem( m_pDirection );
-		m_pDirection->translate( 590, 430 );
 
 		// buttons
 		for( int i = 0; i < m_aButtons.size(); ++ i )
@@ -154,98 +148,77 @@ private:
 
 		if( m_pUserMap->Update() )
 		{
-			// check troso data
-			const auto& rTorso = m_pUserMap->GetActiveUserJoint( nite::JOINT_TORSO );
-			if( rTorso.getPositionConfidence() > fCon && rTorso.getOrientationConfidence() > fCon )
+			const auto& rRHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND );
+			const auto& rLHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND );
+			const auto& rRHandP = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND );
+			const auto& rLHandP = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
+
+			// check use which hand
+			QPointF		mHandPos2D;
+			QVector3D	mHandPos3D;
+
+			auto funcUseRightHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
+				mHandPos3D = rUMP.GetActiveUserJointTR(nite::JOINT_RIGHT_HAND);
+				mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_RIGHT_HAND);
+			};
+
+			auto funcUseLeftHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
+				mHandPos3D = rUMP.GetActiveUserJointTR(nite::JOINT_LEFT_HAND);
+				mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_LEFT_HAND);
+			};
+
+			// check two hands
+			bCanControl = true;
+			if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() < fCon )
 			{
-				// compute the face direction
-				auto& rQ = rTorso.getOrientation();
-				QVector3D vZD( 0, 0, -1 );
-				auto vZ = QQuaternion( rQ.w, rQ.x, rQ.y, rQ.z ).rotatedVector( vZD );
-				
-				// ignore Y axis
-				QVector2D v2DDir = QVector2D( vZ.x(), vZ.z() ).normalized();
-				m_pDirection->m_vDir.setX( v2DDir.x() );
-				m_pDirection->m_vDir.setY( v2DDir.y() );
+				funcUseRightHand( *m_pUserMap );
+			}
+			else if( rRHand.getPositionConfidence() < fCon && rLHand.getPositionConfidence() > fCon )
+			{
+				funcUseLeftHand( *m_pUserMap );
+			}
+			else if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() > fCon )
+			{
+				if( rRHandP.z() > rLHandP.z() )
+					funcUseLeftHand( *m_pUserMap );
+				else
+					funcUseRightHand( *m_pUserMap );
+			}
+			else
+			{
+				bCanControl = false;
+			}
+			
+			if( bCanControl )
+			{
+				// show buttons
+				m_pButtons->resetTransform();
+				m_pButtons->translate( 380, 240 );
+				m_pButtons->show();
 
-				// check if face the sensor
-				if( v2DDir.y() < -g_fFaceCond )
+				// compute the color of icon
+				/*
+				float fZTh = 250;
+				if( mHandPos3D.z - rTPos.z < -fZTh )
+					m_pHandIcon->setBrush( QBrush( qRgba(255,0,0,128) ) );
+				else
+					m_pHandIcon->setBrush( QBrush( qRgba(255,128,128,128) ) );
+					*/
+
+				// check each button
+				for( auto itB = m_aButtons.begin(); itB != m_aButtons.end(); ++ itB )
 				{
-					const auto& rRHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND );
-					const auto& rLHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND );
-
-					// check use which hand
-					QPointF			mHandPos2D;
-					nite::Point3f	mHandPos3D;
-
-					auto funcUseRightHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
-						mHandPos3D = rUMP.GetActiveUserJoint(nite::JOINT_RIGHT_HAND).getPosition();
-						mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_RIGHT_HAND);
-					};
-
-					auto funcUseLeftHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
-						mHandPos3D = rUMP.GetActiveUserJoint(nite::JOINT_LEFT_HAND).getPosition();
-						mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_LEFT_HAND);
-					};
-
-					// check two hands
-					bCanControl = true;
-					if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() < fCon )
+					if( (*itB)->CheckHand( mHandPos2D.x(), mHandPos2D.y(), mHandPos3D.z() ) )
 					{
-						funcUseRightHand( *m_pUserMap );
-					}
-					else if( rRHand.getPositionConfidence() < fCon && rLHand.getPositionConfidence() > fCon )
-					{
-						funcUseLeftHand( *m_pUserMap );
-					}
-					else if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() > fCon )
-					{
-						if( rRHand.getPosition().z > rLHand.getPosition().z )
-							funcUseLeftHand( *m_pUserMap );
-						else
-							funcUseRightHand( *m_pUserMap );
-					}
-					else
-					{
-						bCanControl = false;
-					}
-					
-					if( bCanControl )
-					{
-						// show buttons
-						auto rTPos = rTorso.getPosition();
-						if( !m_pButtons->isVisible() )
-						{
-							float tx, ty;
-							m_rUserTracker.convertJointCoordinatesToDepth( rTPos.x, rTPos.y, rTPos.z, &tx, &ty );
-							m_pButtons->resetTransform();
-							m_pButtons->translate( tx, ty );
-							m_pButtons->show();
-						}
-
-						// compute the color of icon
-						float fZTh = 250;
-						if( mHandPos3D.z - rTPos.z < -fZTh )
-							m_pHandIcon->setBrush( QBrush( qRgba(255,0,0,128) ) );
-						else
-							m_pHandIcon->setBrush( QBrush( qRgba(255,128,128,128) ) );
-
-						// check each button
-						for( auto itB = m_aButtons.begin(); itB != m_aButtons.end(); ++ itB )
-						{
-							if( (*itB)->CheckHand( mHandPos2D.x(), mHandPos2D.y(), mHandPos3D.z ) )
-							{
-							}
-						}
-
-						// update hand icon position
-						m_pHandIcon->resetTransform();
-						m_pHandIcon->translate( mHandPos2D.x(), mHandPos2D.y() );
-
-						// show hand icon
-						m_pHandIcon->show();
 					}
 				}
+
+				// update hand icon position
+				m_pHandIcon->resetTransform();
+				m_pHandIcon->translate( mHandPos2D.x(), mHandPos2D.y() );
+
+				// show hand icon
+				m_pHandIcon->show();
 			}
 		}
 		if( !bCanControl )
@@ -279,7 +252,6 @@ private:
 	QONI_UserMap*			m_pUserMap;
 	QGraphicsEllipseItem*	m_pHandIcon;
 	QGraphicsItemGroup*		m_pButtons;
-	QDirection*				m_pDirection;
 	std::array<QAbsNIButton*,2>	m_aButtons;
 
 	nite::UserTracker&		m_rUserTracker;
@@ -287,13 +259,6 @@ private:
 
 int main( int argc, char** argv )
 {
-	if( argc > 1 )
-	{
-		g_fFaceCond = atof( argv[1] );
-	}
-
-	bool bFrameless = false;
-
 	#pragma region Qt Core
 	// Qt Application
 	QApplication qOpenNIApp( argc, argv );
@@ -342,13 +307,13 @@ int main( int argc, char** argv )
 		QMessageBox::critical( NULL, "User Tracker", "UserTracker created failed" );
 		return -1;
 	}
-	mUserTracker.setSkeletonSmoothingFactor( 0.25f );
+	mUserTracker.setSkeletonSmoothingFactor( 0.5f );
 
 	#pragma endregion
 	
 	#pragma region Qt Widget
 	// Qt Window
-	QTranWidget qWin(mUserTracker,bFrameless);
+	QTranWidget qWin(mUserTracker,false);
 	qWin.show();
 	qWin.resize( 640, 480 );
 	#pragma endregion

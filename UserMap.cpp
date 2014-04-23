@@ -34,6 +34,50 @@ void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *o
 		painter->drawEllipse( *itP, 5, 5 );
 }
 
+void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
+{
+	#pragma region Load all joints
+	m_aJointOri[ 0] = rSkeleton.getJoint(nite::JOINT_HEAD			);
+	m_aJointOri[ 1] = rSkeleton.getJoint(nite::JOINT_NECK			);
+	m_aJointOri[ 2] = rSkeleton.getJoint(nite::JOINT_LEFT_SHOULDER	);
+	m_aJointOri[ 3] = rSkeleton.getJoint(nite::JOINT_RIGHT_SHOULDER	);
+	m_aJointOri[ 4] = rSkeleton.getJoint(nite::JOINT_LEFT_ELBOW		);
+	m_aJointOri[ 5] = rSkeleton.getJoint(nite::JOINT_RIGHT_ELBOW	);
+	m_aJointOri[ 6] = rSkeleton.getJoint(nite::JOINT_LEFT_HAND		);
+	m_aJointOri[ 7] = rSkeleton.getJoint(nite::JOINT_RIGHT_HAND		);
+	m_aJointOri[ 8] = rSkeleton.getJoint(nite::JOINT_TORSO			);
+	m_aJointOri[ 9] = rSkeleton.getJoint(nite::JOINT_LEFT_HIP		);
+	m_aJointOri[10] = rSkeleton.getJoint(nite::JOINT_RIGHT_HIP		);
+	m_aJointOri[11] = rSkeleton.getJoint(nite::JOINT_LEFT_KNEE		);
+	m_aJointOri[12] = rSkeleton.getJoint(nite::JOINT_RIGHT_KNEE		);
+	m_aJointOri[13] = rSkeleton.getJoint(nite::JOINT_LEFT_FOOT		);
+	m_aJointOri[14] = rSkeleton.getJoint(nite::JOINT_RIGHT_FOOT		);
+	#pragma endregion
+
+	#pragma region Compute transformation
+	// compute face direction
+	auto tr = m_aJointOri[8].getOrientation();
+	QQuaternion qTRotation( tr.w, tr.x, tr.y, tr.z );
+	m_vDirection = qTRotation.rotatedVector( QVector3D( 0, 0, -1 ) );
+
+	// compute transformation matrix
+	QMatrix4x4 qTransform;
+	qTransform.setToIdentity();
+	auto tt = m_aJointOri[8].getPosition();
+	qTransform.translate( tt.x, tt.y, tt.z );
+	qTransform.rotate( qTRotation );
+	qTransform = qTransform.inverted();
+	#pragma endregion
+	
+	for( int i = 0; i < m_aJointRotated.size(); ++ i )
+	{
+		const auto& rPos = m_aJointOri[i].getPosition();
+		QVector4D qPos( rPos.x, rPos.y, rPos.z, 1 );
+		m_aJointRotated[i] = ( qTransform * qPos ).toVector3D();
+		m_aJoint2D[i] = QPointF( 320 + m_aJointRotated[i].x() / 5, 240 - m_aJointRotated[i].y() / 5 );
+	}
+}
+
 bool QONI_UserMap::Update()
 {
 	nite::UserTrackerFrameRef	vfUserFrame;
@@ -107,7 +151,8 @@ bool QONI_UserMap::Update()
 
 				// Analyze user skeleton
 				const auto& rSkeleton = pActiveUser->getSkeleton();
-				LoadSkeleton( rSkeleton );
+				m_UserSkeleton.SetSkeleton( rSkeleton );
+				m_UserDirection.m_vDir = QVector2D( m_UserSkeleton.m_vDirection.x(), m_UserSkeleton.m_vDirection.z() ).normalized();
 				m_UserSkeleton.show();
 			}
 		}
@@ -129,33 +174,5 @@ bool QONI_UserMap::Update()
 		m_UserImage.setPixmap( QPixmap::fromImage( mImage ) );
 
 		return bUseUserMap;
-	}
-}
-
-void QONI_UserMap::LoadSkeleton( const nite::Skeleton& rSkeleton )
-{
-	m_aJoint3D[ 0] = rSkeleton.getJoint(nite::JOINT_HEAD			);
-	m_aJoint3D[ 1] = rSkeleton.getJoint(nite::JOINT_NECK			);
-	m_aJoint3D[ 2] = rSkeleton.getJoint(nite::JOINT_LEFT_SHOULDER	);
-	m_aJoint3D[ 3] = rSkeleton.getJoint(nite::JOINT_RIGHT_SHOULDER	);
-	m_aJoint3D[ 4] = rSkeleton.getJoint(nite::JOINT_LEFT_ELBOW		);
-	m_aJoint3D[ 5] = rSkeleton.getJoint(nite::JOINT_RIGHT_ELBOW		);
-	m_aJoint3D[ 6] = rSkeleton.getJoint(nite::JOINT_LEFT_HAND		);
-	m_aJoint3D[ 7] = rSkeleton.getJoint(nite::JOINT_RIGHT_HAND		);
-	m_aJoint3D[ 8] = rSkeleton.getJoint(nite::JOINT_TORSO			);
-	m_aJoint3D[ 9] = rSkeleton.getJoint(nite::JOINT_LEFT_HIP		);
-	m_aJoint3D[10] = rSkeleton.getJoint(nite::JOINT_RIGHT_HIP		);
-	m_aJoint3D[11] = rSkeleton.getJoint(nite::JOINT_LEFT_KNEE		);
-	m_aJoint3D[12] = rSkeleton.getJoint(nite::JOINT_RIGHT_KNEE		);
-	m_aJoint3D[13] = rSkeleton.getJoint(nite::JOINT_LEFT_FOOT		);
-	m_aJoint3D[14] = rSkeleton.getJoint(nite::JOINT_RIGHT_FOOT		);
-
-	for( int i = 0; i < m_aJoint3D.size(); ++ i )
-	{
-		const auto& rPos = m_aJoint3D[i].getPosition();
-		float x, y;
-		m_rUserTracker.convertJointCoordinatesToDepth( rPos.x, rPos.y, rPos.z, &x, &y );
-		m_aJoint2D[i] = QPointF( x, y );
-		m_UserSkeleton.m_aJoint2D[i] = m_aJoint2D[i];
 	}
 }

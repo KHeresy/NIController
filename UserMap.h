@@ -13,10 +13,10 @@
 /**
  * The QGraphicsItem to draw user face direction
  */
-class QDirection : public QGraphicsItem
+class QUserDirection : public QGraphicsItem
 {
 public:
-	QDirection( int uSize ) : QGraphicsItem()
+	QUserDirection( int uSize ) : QGraphicsItem()
 	{
 		m_qRect = QRectF( QPointF( 0, 0 ), QSizeF(uSize,uSize) );
 		m_vDir = QVector2D( 0, -1 );
@@ -64,8 +64,13 @@ public:
 
 	void paint( QPainter *painter,  const QStyleOptionGraphicsItem *option, QWidget *widget );
 
+	void SetSkeleton( const nite::Skeleton& rSkeleton );
+
 public:
-	std::array<QPointF,15>	m_aJoint2D;
+	std::array<QPointF,15>				m_aJoint2D;
+	std::array<QVector3D,15>			m_aJointRotated;
+	std::array<nite::SkeletonJoint,15>	m_aJointOri;
+	QVector3D	m_vDirection;
 };
 
 /**
@@ -74,10 +79,12 @@ public:
 class QONI_UserMap : public QGraphicsItemGroup
 {
 public:
-	QONI_UserMap( nite::UserTracker& rUserTracker ) : m_rUserTracker(rUserTracker)
+	QONI_UserMap( nite::UserTracker& rUserTracker ) : m_rUserTracker(rUserTracker), m_UserDirection(40)
 	{
 		addToGroup(&m_UserImage);
 		addToGroup(&m_UserSkeleton);
+		addToGroup(&m_UserDirection);
+		m_UserDirection.translate( 590, 430 );
 		m_UserSkeleton.hide();
 	}
 
@@ -85,12 +92,17 @@ public:
 
 	const nite::SkeletonJoint& GetActiveUserJoint( const nite::JointType& eJoint ) const 
 	{
-		return m_aJoint3D[eJoint];
+		return m_UserSkeleton.m_aJointOri[eJoint];
+	}
+
+	const QVector3D& GetActiveUserJointTR( const nite::JointType& eJoint ) const 
+	{
+		return m_UserSkeleton.m_aJointRotated[eJoint];
 	}
 
 	const QPointF& GetActiveUserJoint2D( const nite::JointType& eJoint ) const 
 	{
-		return m_aJoint2D[eJoint];
+		return m_UserSkeleton.m_aJoint2D[eJoint];
 	}
 
 	QRectF boundingRect() const
@@ -98,14 +110,9 @@ public:
 		return m_UserImage.boundingRect();
 	}
 
-protected:
-	void LoadSkeleton( const nite::Skeleton& rSkeleton );
-
 public:
 	nite::UserTracker&		m_rUserTracker;
 	QGraphicsPixmapItem		m_UserImage;
 	QONI_Skeleton			m_UserSkeleton;
-
-	std::array<nite::SkeletonJoint,15>	m_aJoint3D;
-	std::array<QPointF,15>				m_aJoint2D;
+	QUserDirection			m_UserDirection;
 };
