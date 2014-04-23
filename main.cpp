@@ -60,9 +60,11 @@ public:
 		// Scene
 		m_pUserMap = new QONI_UserMap( m_rUserTracker );
 		m_qScene.addItem( m_pUserMap );
+		m_pUserMap->setZValue( 2 );
 
 		m_pButtons		= new QGraphicsItemGroup();
 		m_qScene.addItem( m_pButtons );
+		m_pButtons->setZValue( 1 );
 
 		// buttons
 		for( int i = 0; i < m_aButtons.size(); ++ i )
