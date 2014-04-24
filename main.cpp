@@ -87,7 +87,7 @@ public:
 		m_pHand		= new QAbsNIButton( 100 );
 		QTranWidget* pThis = this;
 		m_pHand->m_mFunc = [pThis](){
-			//pThis->m_eControlStatus = QTranWidget::NICS_INPUT;
+			pThis->m_eControlStatus = QTranWidget::NICS_INPUT;
 		};
 		m_qScene.addItem( m_pHand );
 		m_pHand->setZValue( 1 );
@@ -159,8 +159,8 @@ private:
 
 	void timerEvent( QTimerEvent* pEvent )
 	{
-		float fCon = 0.5f;
-		float fZTh = -300;
+		float fJointConTh = 0.5f;
+		float fFixZTh = -300;
 		float fMoveTh = 30;
 		boost::chrono::milliseconds tdFixTime(100);
 
@@ -171,9 +171,9 @@ private:
 			float	fRC = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND ).getPositionConfidence(),
 					fLC = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND ).getPositionConfidence();
 
-			if( fRC > fCon )
+			if( fRC > fJointConTh )
 			{
-				if( fLC > fCon )
+				if( fLC > fJointConTh )
 				{
 					QVector3D	posR = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND ),
 								posL = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
@@ -187,7 +187,7 @@ private:
 					eHandStatus = NICH_RIGHT_HAND;
 				}
 			}
-			else if( fLC > fCon )
+			else if( fLC > fJointConTh )
 			{
 				eHandStatus = NICH_LEFT_HAND;
 			}
@@ -232,7 +232,7 @@ private:
 
 				if( m_eControlStatus == NICS_WAIT_FIX )
 				{
-					if( mHandPos3D.z() < fZTh )
+					if( mHandPos3D.z() < fFixZTh )
 					{
 						// check if hand position is fix long enough
 						bool bFix = false;
@@ -263,13 +263,19 @@ private:
 					}
 				}
 
-				//if( m_eControlStatus == NICS_FIXED )
+				// check if hand move out from button
+				if( m_eControlStatus == NICS_FIXED )
 				{
 					if( !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
 					{
-						m_eControlStatus == NICS_WAIT_FIX;
+						m_eControlStatus = NICS_WAIT_FIX;
 						m_pHand->hide();
 					}
+				}
+
+				if( m_eControlStatus == NICS_INPUT )
+				{
+					//TODO: the control after fix
 				}
 			}
 		}
