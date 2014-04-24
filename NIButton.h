@@ -75,14 +75,9 @@ public:
 				if( m_eState == IN_SIDE )
 				{
 					if( m_fProgress >= 1 )
-						m_eState = PRESSED;
-				}
-				else if( m_eState == PRESSED )
-				{
-					if( m_fProgress < 1 )
 					{
+						m_eState = PRESSED;
 						m_mFunc();
-						m_eState = IN_SIDE;
 					}
 				}
 			}
