@@ -5,6 +5,9 @@
 #include <iostream>
 #include <sstream>
 
+// Boost Header
+#include <boost/circular_buffer.hpp>
+
 // Qt Header
 #include <QtGui/QtGui>
 
@@ -62,24 +65,11 @@ public:
 		m_qScene.addItem( m_pUserMap );
 		m_pUserMap->setZValue( 2 );
 
-		m_pButtons		= new QGraphicsItemGroup();
-		m_qScene.addItem( m_pButtons );
-		m_pButtons->setZValue( 1 );
+		m_pHand		= new QAbsNIButton( 100 );
+		m_qScene.addItem( m_pHand );
+		m_pHand->setZValue( 1 );
 
-		// buttons
-		for( int i = 0; i < m_aButtons.size(); ++ i )
-		{
-			m_aButtons[i] = new QAbsNIButton( 200 );
-			m_pButtons->addToGroup( m_aButtons[i] );
-		}
-		m_aButtons[0]->translate( -100, 0 );
-		m_aButtons[0]->m_mFunc = [](){ SendKey(VK_PRIOR); };
-		m_aButtons[1]->translate( 100, 0 );
-		m_aButtons[1]->m_mFunc = [](){ SendKey(VK_NEXT); };
-		m_pButtons->translate( 320, 200 );
-
-		m_pHandIcon			= m_qScene.addEllipse( QRectF( -10, -10, 10, 10 ), QPen( qRgba(0,0,0,0) ), QBrush( qRgba(255,128,128,128) ) );
-		m_pHandIcon->hide();
+		m_aTrackList.set_capacity( 150 );
 
 		SetFramless( bFrameless );
 	}
@@ -146,87 +136,108 @@ private:
 	void timerEvent( QTimerEvent* pEvent )
 	{
 		float fCon = 0.5f;
-		bool bCanControl = false;
+		float fZTh = -250;
+		float fMoveTh = 30;
+		boost::chrono::milliseconds tdFixTime(300);
+
+		static bool bCanControl = false;
 
 		if( m_pUserMap->Update() )
 		{
-			const auto& rRHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND );
-			const auto& rLHand = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND );
-			const auto& rRHandP = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND );
-			const auto& rLHandP = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
-
-			// check use which hand
-			QPointF		mHandPos2D;
+			bool	bHasHand	= false,
+					bRightHand	= true;
 			QVector3D	mHandPos3D;
+			QPointF		mHandPos2D;
 
-			auto funcUseRightHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
-				mHandPos3D = rUMP.GetActiveUserJointTR(nite::JOINT_RIGHT_HAND);
-				mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_RIGHT_HAND);
-			};
+			#pragma region select nearest hand
+			float	fRC = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND ).getPositionConfidence(),
+					fLC = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND ).getPositionConfidence();
 
-			auto funcUseLeftHand = [&mHandPos2D,&mHandPos3D](QONI_UserMap& rUMP){
-				mHandPos3D = rUMP.GetActiveUserJointTR(nite::JOINT_LEFT_HAND);
-				mHandPos2D = rUMP.GetActiveUserJoint2D(nite::JOINT_LEFT_HAND);
-			};
-
-			// check two hands
-			bCanControl = true;
-			if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() < fCon )
+			if( fRC > fCon )
 			{
-				funcUseRightHand( *m_pUserMap );
-			}
-			else if( rRHand.getPositionConfidence() < fCon && rLHand.getPositionConfidence() > fCon )
-			{
-				funcUseLeftHand( *m_pUserMap );
-			}
-			else if( rRHand.getPositionConfidence() > fCon && rLHand.getPositionConfidence() > fCon )
-			{
-				if( rRHandP.z() > rLHandP.z() )
-					funcUseLeftHand( *m_pUserMap );
-				else
-					funcUseRightHand( *m_pUserMap );
-			}
-			else
-			{
-				bCanControl = false;
-			}
-			
-			if( bCanControl )
-			{
-				// show buttons
-				m_pButtons->resetTransform();
-				m_pButtons->translate( 380, 240 );
-				m_pButtons->show();
-
-				// compute the color of icon
-				/*
-				float fZTh = 250;
-				if( mHandPos3D.z - rTPos.z < -fZTh )
-					m_pHandIcon->setBrush( QBrush( qRgba(255,0,0,128) ) );
-				else
-					m_pHandIcon->setBrush( QBrush( qRgba(255,128,128,128) ) );
-					*/
-
-				// check each button
-				for( auto itB = m_aButtons.begin(); itB != m_aButtons.end(); ++ itB )
+				bHasHand = true;
+				if( fLC > fCon )
 				{
-					if( (*itB)->CheckHand( mHandPos2D.x(), mHandPos2D.y(), mHandPos3D.z() ) )
-					{
-					}
+					QVector3D	posR = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND ),
+								posL = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
+					if( posR.z() > posL.z() )
+						bRightHand = false;
+				}
+			}
+			else if( fLC > fCon )
+			{
+				bHasHand = true;
+				bRightHand = false;
+			}
+			#pragma endregion
+
+			if( bHasHand )
+			{
+				// get hand info
+				if( bRightHand )
+				{
+					mHandPos3D = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND );
+					mHandPos2D = m_pUserMap->GetActiveUserJoint2D( nite::JOINT_RIGHT_HAND );
+				}
+				else
+				{
+					mHandPos3D = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
+					mHandPos2D = m_pUserMap->GetActiveUserJoint2D( nite::JOINT_LEFT_HAND );
 				}
 
-				// update hand icon position
-				m_pHandIcon->resetTransform();
-				m_pHandIcon->translate( mHandPos2D.x(), mHandPos2D.y() );
+				// add current position into track list
+				auto tpNow = boost::chrono::system_clock::now();
+				m_aTrackList.push_back( std::make_pair( tpNow, mHandPos3D ) );
 
-				// show hand icon
-				m_pHandIcon->show();
+				// check if hand is fix for 1 second
+				if( bCanControl == false )
+				{
+					// check if hand position is fix long enough
+					bool bFix = false;
+					for( auto itPt = m_aTrackList.rbegin(); itPt != m_aTrackList.rend(); ++ itPt )
+					{
+						// check position
+						if( ( mHandPos3D - itPt->second ).length() > fMoveTh )
+							break;
+
+						// check time
+						if( tpNow - itPt->first > tdFixTime )
+						{
+							bFix = true;
+							break;
+						}
+					}
+
+
+					if( bFix )
+					{
+						bCanControl = true;
+
+						// update hand icon position
+						m_pHand->resetTransform();
+						m_pHand->translate( mHandPos2D.x() + 25, mHandPos2D.y() + 25 );	//TODO: Should not shift here
+						m_pHand->show();
+
+						m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() );
+					}
+					else
+					{
+						bCanControl = false;
+					}
+				}
+				else
+				{
+					if( !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
+					{
+						bCanControl = false;
+					}
+				}
 			}
-		}
-		if( !bCanControl )
-		{
-			m_pHandIcon->hide();
-			m_pButtons->hide();
+
+			if( !bCanControl )
+			{
+				m_pHand->hide();
+			}
 		}
 
 		m_qView.fitInView( 0, 0, 640, 480, Qt::KeepAspectRatio  );
@@ -251,12 +262,12 @@ private:
 	QGraphicsScene	m_qScene;
 	QGraphicsView	m_qView;
 	QGridLayout		m_qLayout;
-	QONI_UserMap*			m_pUserMap;
-	QGraphicsEllipseItem*	m_pHandIcon;
-	QGraphicsItemGroup*		m_pButtons;
-	std::array<QAbsNIButton*,2>	m_aButtons;
+	QONI_UserMap*	m_pUserMap;
+	QAbsNIButton*	m_pHand;
 
 	nite::UserTracker&		m_rUserTracker;
+
+	boost::circular_buffer< std::pair<boost::chrono::system_clock::time_point, QVector3D> >	m_aTrackList;
 };
 
 int main( int argc, char** argv )

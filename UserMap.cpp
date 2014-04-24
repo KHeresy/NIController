@@ -3,7 +3,7 @@
 void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	// set pen for drawing
-	QPen pen( qRgba( 64, 64, 255, 255 ) );
+	QPen pen( qRgba( 64, 64, 255, 192 ) );
 	pen.setWidth( 3 );
 	painter->setPen( pen );
 
