@@ -136,7 +136,7 @@ private:
 	void timerEvent( QTimerEvent* pEvent )
 	{
 		float fCon = 0.5f;
-		float fZTh = -250;
+		float fZTh = -300;
 		float fMoveTh = 30;
 		boost::chrono::milliseconds tdFixTime(300);
 
@@ -208,7 +208,7 @@ private:
 						}
 					}
 
-
+					// start float hand button if fix
 					if( bFix )
 					{
 						bCanControl = true;
@@ -217,25 +217,13 @@ private:
 						m_pHand->resetTransform();
 						m_pHand->translate( mHandPos2D.x() + 25, mHandPos2D.y() + 25 );	//TODO: Should not shift here
 						m_pHand->show();
-
-						m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() );
-					}
-					else
-					{
-						bCanControl = false;
-					}
-				}
-				else
-				{
-					if( !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
-					{
-						bCanControl = false;
 					}
 				}
 			}
 
-			if( !bCanControl )
+			if( !bCanControl || !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
 			{
+				bCanControl = false;
 				m_pHand->hide();
 			}
 		}
