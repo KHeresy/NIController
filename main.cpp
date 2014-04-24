@@ -41,9 +41,28 @@ void SendKey( WORD key )
 class QTranWidget : public QWidget
 {
 public:
+	enum EControlHand
+	{
+		NICH_NO_HAND,
+		NICH_RIGHT_HAND,
+		NICH_LEFT_HAND,
+	};
+
+	enum EControlStatus
+	{
+		NICS_STANDBY,
+		NICS_WAIT_FIX,
+		NICS_FIXED,
+		NICS_INPUT,
+	};
+
+public:
 	QTranWidget( nite::UserTracker& rUT, bool bFrameless = true ) :
 		QWidget(), m_rUserTracker( rUT ), m_qScene(), m_qView( &m_qScene, this ), m_qLayout(this)
 	{
+		m_eControlStatus	= NICS_STANDBY;
+		m_eControlHand		= NICH_NO_HAND;
+
 		// configurate window
 		setAttribute(Qt::WA_NoSystemBackground, true);
 		setAttribute(Qt::WA_TranslucentBackground, true);
@@ -66,8 +85,13 @@ public:
 		m_pUserMap->setZValue( 2 );
 
 		m_pHand		= new QAbsNIButton( 100 );
+		QTranWidget* pThis = this;
+		m_pHand->m_mFunc = [pThis](){
+			//pThis->m_eControlStatus = QTranWidget::NICS_INPUT;
+		};
 		m_qScene.addItem( m_pHand );
 		m_pHand->setZValue( 1 );
+		m_pHand->hide();
 
 		m_aTrackList.set_capacity( 150 );
 
@@ -138,43 +162,49 @@ private:
 		float fCon = 0.5f;
 		float fZTh = -300;
 		float fMoveTh = 30;
-		boost::chrono::milliseconds tdFixTime(300);
-
-		static bool bCanControl = false;
+		boost::chrono::milliseconds tdFixTime(100);
 
 		if( m_pUserMap->Update() )
 		{
-			bool	bHasHand	= false,
-					bRightHand	= true;
-			QVector3D	mHandPos3D;
-			QPointF		mHandPos2D;
-
+			EControlHand	eHandStatus = NICH_NO_HAND;
 			#pragma region select nearest hand
 			float	fRC = m_pUserMap->GetActiveUserJoint( nite::JOINT_RIGHT_HAND ).getPositionConfidence(),
 					fLC = m_pUserMap->GetActiveUserJoint( nite::JOINT_LEFT_HAND ).getPositionConfidence();
 
 			if( fRC > fCon )
 			{
-				bHasHand = true;
 				if( fLC > fCon )
 				{
 					QVector3D	posR = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND ),
 								posL = m_pUserMap->GetActiveUserJointTR( nite::JOINT_LEFT_HAND );
 					if( posR.z() > posL.z() )
-						bRightHand = false;
+						eHandStatus = NICH_LEFT_HAND;
+					else
+						eHandStatus = NICH_RIGHT_HAND;
+				}
+				else
+				{
+					eHandStatus = NICH_RIGHT_HAND;
 				}
 			}
 			else if( fLC > fCon )
 			{
-				bHasHand = true;
-				bRightHand = false;
+				eHandStatus = NICH_LEFT_HAND;
 			}
 			#pragma endregion
 
-			if( bHasHand )
+			if( eHandStatus == NICH_NO_HAND )
+			{
+				m_eControlHand = NICH_NO_HAND;
+				m_eControlStatus = NICS_STANDBY;
+				m_pHand->hide();
+			}
+			else
 			{
 				// get hand info
-				if( bRightHand )
+				QVector3D	mHandPos3D;
+				QPointF		mHandPos2D;
+				if( eHandStatus == NICH_RIGHT_HAND )
 				{
 					mHandPos3D = m_pUserMap->GetActiveUserJointTR( nite::JOINT_RIGHT_HAND );
 					mHandPos2D = m_pUserMap->GetActiveUserJoint2D( nite::JOINT_RIGHT_HAND );
@@ -185,46 +215,62 @@ private:
 					mHandPos2D = m_pUserMap->GetActiveUserJoint2D( nite::JOINT_LEFT_HAND );
 				}
 
+				// hand changed
+				if( eHandStatus != m_eControlHand )
+				{
+					m_eControlHand = eHandStatus;
+					m_eControlStatus = NICS_STANDBY;
+					m_aTrackList.clear();
+				}
+
 				// add current position into track list
 				auto tpNow = boost::chrono::system_clock::now();
 				m_aTrackList.push_back( std::make_pair( tpNow, mHandPos3D ) );
 
-				// check if hand is fix for 1 second
-				if( bCanControl == false )
-				{
-					// check if hand position is fix long enough
-					bool bFix = false;
-					for( auto itPt = m_aTrackList.rbegin(); itPt != m_aTrackList.rend(); ++ itPt )
-					{
-						// check position
-						if( ( mHandPos3D - itPt->second ).length() > fMoveTh )
-							break;
+				if( m_eControlStatus == NICS_STANDBY )
+					m_eControlStatus = NICS_WAIT_FIX;
 
-						// check time
-						if( tpNow - itPt->first > tdFixTime )
+				if( m_eControlStatus == NICS_WAIT_FIX )
+				{
+					if( mHandPos3D.z() < fZTh )
+					{
+						// check if hand position is fix long enough
+						bool bFix = false;
+						for( auto itPt = m_aTrackList.rbegin(); itPt != m_aTrackList.rend(); ++ itPt )
 						{
-							bFix = true;
-							break;
+							// check position
+							if( ( mHandPos3D - itPt->second ).length() > fMoveTh )
+								break;
+	
+							// check time
+							if( tpNow - itPt->first > tdFixTime )
+							{
+								bFix = true;
+								break;
+							}
+						}
+	
+						// start float hand button if fix
+						if( bFix )
+						{
+							m_eControlStatus = NICS_FIXED;
+	
+							// update hand icon position
+							m_pHand->resetTransform();
+							m_pHand->translate( mHandPos2D.x() + 25, mHandPos2D.y() + 25 );	//TODO: Should not shift here (magic number?)
+							m_pHand->show();
 						}
 					}
+				}
 
-					// start float hand button if fix
-					if( bFix )
+				//if( m_eControlStatus == NICS_FIXED )
+				{
+					if( !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
 					{
-						bCanControl = true;
-
-						// update hand icon position
-						m_pHand->resetTransform();
-						m_pHand->translate( mHandPos2D.x() + 25, mHandPos2D.y() + 25 );	//TODO: Should not shift here
-						m_pHand->show();
+						m_eControlStatus == NICS_WAIT_FIX;
+						m_pHand->hide();
 					}
 				}
-			}
-
-			if( !bCanControl || !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
-			{
-				bCanControl = false;
-				m_pHand->hide();
 			}
 		}
 
@@ -245,6 +291,8 @@ private:
 
 private:
 	bool	m_bFrameless;
+	EControlStatus	m_eControlStatus;
+	EControlHand	m_eControlHand;
 
 	QPoint			m_qMouseShift;
 	QGraphicsScene	m_qScene;
