@@ -27,6 +27,7 @@ public:
 	{
 		m_eControlStatus	= NICS_STANDBY;
 		m_aTrackList.set_capacity( 150 );
+		m_qRect.setRect( 0, 0, 640, 480 );
 
 		m_pHand		= new QAbsNIButton( 100 );
 		QHandControl* pThis = this;
@@ -34,9 +35,10 @@ public:
 			pThis->m_eControlStatus = QHandControl::NICS_INPUT;
 		};
 		m_pHand->hide();
+		addToGroup( m_pHand );
 	}
 
-	void ResetList()
+	void HandReset()
 	{
 		m_eControlStatus	= NICS_STANDBY;
 		m_aTrackList.clear();
@@ -61,11 +63,19 @@ public:
 		return false;
 	}
 
-public:
-	QAbsNIButton*	m_pHand;
+	void SetRect( const QRectF& rRect )
+	{
+		m_qRect = rRect;
+	}
 
+	QRectF boundingRect() const
+	{
+		return m_qRect;
+	}
 
 private:
+	QAbsNIButton*	m_pHand;
+	QRectF			m_qRect;
 	EControlStatus	m_eControlStatus;
 
 	QPointF		m_curPos2D;

@@ -75,7 +75,7 @@ public:
 		m_qScene.addItem( m_pUserMap );
 		m_pUserMap->setZValue( 2 );
 
-		m_qScene.addItem( m_mHandControl.m_pHand );
+		m_qScene.addItem( &m_mHandControl );
 
 		SetFramless( bFrameless );
 	}
@@ -177,12 +177,11 @@ private:
 			}
 			#pragma endregion
 
-			if( eHandStatus == NICH_NO_HAND )
-			{
-				m_eControlHand = NICH_NO_HAND;
-				m_mHandControl.ResetList();
-			}
-			else
+			if( eHandStatus == NICH_NO_HAND || eHandStatus != m_eControlHand )
+				m_mHandControl.HandReset();
+
+			m_eControlHand = eHandStatus;
+			if( eHandStatus != NICH_NO_HAND )
 			{
 				#pragma region General Hand position process
 				// get hand info
@@ -203,7 +202,7 @@ private:
 				if( eHandStatus != m_eControlHand )
 				{
 					m_eControlHand = eHandStatus;
-					m_mHandControl.ResetList();
+					m_mHandControl.HandReset();
 				}
 
 				// add current position into track list
