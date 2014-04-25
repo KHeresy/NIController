@@ -90,6 +90,7 @@
     <ClCompile Include="UserMap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HandControl.h" />
     <ClInclude Include="NIButton.h" />
     <ClInclude Include="UserMap.h" />
   </ItemGroup>

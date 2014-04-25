@@ -16,8 +16,8 @@
 #include <NiTE.h>
 
 // Application header
-#include "NIButton.h"
 #include "UserMap.h"
+#include "HandControl.h"
 
 // windows header
 #include <Windows.h>
@@ -48,19 +48,10 @@ public:
 		NICH_LEFT_HAND,
 	};
 
-	enum EControlStatus
-	{
-		NICS_STANDBY,
-		NICS_WAIT_FIX,
-		NICS_FIXED,
-		NICS_INPUT,
-	};
-
 public:
 	QTranWidget( nite::UserTracker& rUT, bool bFrameless = true ) :
 		QWidget(), m_rUserTracker( rUT ), m_qScene(), m_qView( &m_qScene, this ), m_qLayout(this)
 	{
-		m_eControlStatus	= NICS_STANDBY;
 		m_eControlHand		= NICH_NO_HAND;
 
 		// configurate window
@@ -84,16 +75,7 @@ public:
 		m_qScene.addItem( m_pUserMap );
 		m_pUserMap->setZValue( 2 );
 
-		m_pHand		= new QAbsNIButton( 100 );
-		QTranWidget* pThis = this;
-		m_pHand->m_mFunc = [pThis](){
-			pThis->m_eControlStatus = QTranWidget::NICS_INPUT;
-		};
-		m_qScene.addItem( m_pHand );
-		m_pHand->setZValue( 1 );
-		m_pHand->hide();
-
-		m_aTrackList.set_capacity( 150 );
+		m_qScene.addItem( m_mHandControl.m_pHand );
 
 		SetFramless( bFrameless );
 	}
@@ -159,9 +141,11 @@ private:
 
 	void timerEvent( QTimerEvent* pEvent )
 	{
+		//TODO: should make these as member data
 		float fJointConTh = 0.5f;
 		float fFixZTh = -300;
-		float fMoveTh = 30;
+		float fMoveTh = 10;
+		float fHandDownTh = 100;
 		boost::chrono::milliseconds tdFixTime(100);
 
 		if( m_pUserMap->Update() )
@@ -196,11 +180,11 @@ private:
 			if( eHandStatus == NICH_NO_HAND )
 			{
 				m_eControlHand = NICH_NO_HAND;
-				m_eControlStatus = NICS_STANDBY;
-				m_pHand->hide();
+				m_mHandControl.ResetList();
 			}
 			else
 			{
+				#pragma region General Hand position process
 				// get hand info
 				QVector3D	mHandPos3D;
 				QPointF		mHandPos2D;
@@ -219,64 +203,12 @@ private:
 				if( eHandStatus != m_eControlHand )
 				{
 					m_eControlHand = eHandStatus;
-					m_eControlStatus = NICS_STANDBY;
-					m_aTrackList.clear();
+					m_mHandControl.ResetList();
 				}
 
 				// add current position into track list
-				auto tpNow = boost::chrono::system_clock::now();
-				m_aTrackList.push_back( std::make_pair( tpNow, mHandPos3D ) );
-
-				if( m_eControlStatus == NICS_STANDBY )
-					m_eControlStatus = NICS_WAIT_FIX;
-
-				if( m_eControlStatus == NICS_WAIT_FIX )
-				{
-					if( mHandPos3D.z() < fFixZTh )
-					{
-						// check if hand position is fix long enough
-						bool bFix = false;
-						for( auto itPt = m_aTrackList.rbegin(); itPt != m_aTrackList.rend(); ++ itPt )
-						{
-							// check position
-							if( ( mHandPos3D - itPt->second ).length() > fMoveTh )
-								break;
-	
-							// check time
-							if( tpNow - itPt->first > tdFixTime )
-							{
-								bFix = true;
-								break;
-							}
-						}
-	
-						// start float hand button if fix
-						if( bFix )
-						{
-							m_eControlStatus = NICS_FIXED;
-	
-							// update hand icon position
-							m_pHand->resetTransform();
-							m_pHand->translate( mHandPos2D.x() + 25, mHandPos2D.y() + 25 );	//TODO: Should not shift here (magic number?)
-							m_pHand->show();
-						}
-					}
-				}
-
-				// check if hand move out from button
-				if( m_eControlStatus == NICS_FIXED )
-				{
-					if( !m_pHand->CheckHand( mHandPos2D.x(), mHandPos2D.y() ) )
-					{
-						m_eControlStatus = NICS_WAIT_FIX;
-						m_pHand->hide();
-					}
-				}
-
-				if( m_eControlStatus == NICS_INPUT )
-				{
-					//TODO: the control after fix
-				}
+				auto tpNow = m_mHandControl.UpdateHandPoint( mHandPos2D, mHandPos3D );
+				#pragma endregion
 			}
 		}
 
@@ -297,7 +229,6 @@ private:
 
 private:
 	bool	m_bFrameless;
-	EControlStatus	m_eControlStatus;
 	EControlHand	m_eControlHand;
 
 	QPoint			m_qMouseShift;
@@ -305,11 +236,10 @@ private:
 	QGraphicsView	m_qView;
 	QGridLayout		m_qLayout;
 	QONI_UserMap*	m_pUserMap;
-	QAbsNIButton*	m_pHand;
 
 	nite::UserTracker&		m_rUserTracker;
 
-	boost::circular_buffer< std::pair<boost::chrono::system_clock::time_point, QVector3D> >	m_aTrackList;
+	QHandControl	m_mHandControl;
 };
 
 int main( int argc, char** argv )

@@ -21,6 +21,9 @@
     <ClInclude Include="UserMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HandControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
