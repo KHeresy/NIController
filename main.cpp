@@ -76,6 +76,7 @@ public:
 		m_pUserMap->setZValue( 2 );
 
 		m_qScene.addItem( &m_mHandControl );
+		m_mHandControl.setZValue( 1 );
 
 		SetFramless( bFrameless );
 	}
@@ -143,10 +144,6 @@ private:
 	{
 		//TODO: should make these as member data
 		float fJointConTh = 0.5f;
-		float fFixZTh = -300;
-		float fMoveTh = 10;
-		float fHandDownTh = 100;
-		boost::chrono::milliseconds tdFixTime(100);
 
 		if( m_pUserMap->Update() )
 		{

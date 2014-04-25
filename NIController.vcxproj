@@ -86,12 +86,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HandControl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UserMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandControl.h" />
-    <ClInclude Include="NIButton.h" />
     <ClInclude Include="UserMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
