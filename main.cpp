@@ -178,10 +178,12 @@ private:
 			#pragma endregion
 
 			if( eHandStatus == NICH_NO_HAND || eHandStatus != m_eControlHand )
-				m_mHandControl.HandReset();
+			{
+				m_mHandControl.HandLost();
+				m_eControlHand = eHandStatus;
+			}
 
-			m_eControlHand = eHandStatus;
-			if( eHandStatus != NICH_NO_HAND )
+			if( m_eControlHand != NICH_NO_HAND )
 			{
 				#pragma region General Hand position process
 				// get hand info
@@ -198,15 +200,8 @@ private:
 					mHandPos2D = m_pUserMap->GetActiveUserJoint2D( nite::JOINT_LEFT_HAND );
 				}
 
-				// hand changed
-				if( eHandStatus != m_eControlHand )
-				{
-					m_eControlHand = eHandStatus;
-					m_mHandControl.HandReset();
-				}
-
 				// add current position into track list
-				auto tpNow = m_mHandControl.UpdateHandPoint( mHandPos2D, mHandPos3D );
+				m_mHandControl.UpdateHandPoint( mHandPos2D, mHandPos3D );
 				#pragma endregion
 			}
 		}
