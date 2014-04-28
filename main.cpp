@@ -19,23 +19,7 @@
 #include "UserMap.h"
 #include "HandControl.h"
 
-// windows header
-#include <Windows.h>
 #pragma endregion
-
-/**
- * Keyboard simulator
- */
-void SendKey( WORD key )
-{
-	INPUT mWinEvent;
-	mWinEvent.type = INPUT_KEYBOARD;
-	mWinEvent.ki.time = 0;
-	mWinEvent.ki.dwFlags = 0;
-	mWinEvent.ki.wScan = 0;
-	mWinEvent.ki.wVk = key;
-	SendInput( 1, &mWinEvent, sizeof(mWinEvent) );
-}
 
 // Main Window
 class QTranWidget : public QWidget

@@ -1,5 +1,22 @@
 #include "HandControl.h"
 
+// windows header
+#include <Windows.h>
+
+/**
+ * Keyboard simulator
+ */
+void SendKey( WORD key )
+{
+	INPUT mWinEvent;
+	mWinEvent.type = INPUT_KEYBOARD;
+	mWinEvent.ki.time = 0;
+	mWinEvent.ki.dwFlags = 0;
+	mWinEvent.ki.wScan = 0;
+	mWinEvent.ki.wVk = key;
+	SendInput( 1, &mWinEvent, sizeof(mWinEvent) );
+}
+
 void QHandIcon::paint( QPainter *pPainter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	switch( m_eStatus )
@@ -80,7 +97,7 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D )
 {
 	//TODO: tmp only
-	float fMoveTh = 10;
+	float fMoveTh = 25;
 	float fFixZTh = -300;
 	boost::chrono::milliseconds tdPreFixTime(200);
 	boost::chrono::milliseconds tdFixTime(1000);
@@ -159,11 +176,17 @@ void QHandControl::BuildButtons()
 	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );
 	pNext->translate( 50, -30 );
 	m_qButtons.addToGroup( pNext );
-	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pNext, [](){ std::cout << "NEXT" << std::endl; } ) );
+	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pNext, [](){
+		std::cout << "NEXT" << std::endl;
+		SendKey( VK_NEXT );
+	} ) );
 
 	QGraphicsPixmapItem* pPerv = new QGraphicsPixmapItem( imgArrow );
 	pPerv->rotate( 180 );
 	pPerv->translate( 50, -30 );
 	m_qButtons.addToGroup( pPerv );
-	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pPerv, [](){ std::cout << "PERV" << std::endl; } ) );
+	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pPerv, [](){
+		std::cout << "PERV" << std::endl;
+		SendKey( VK_PRIOR );
+	} ) );
 }

@@ -88,7 +88,7 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 		const auto& rPos = m_aJointOri[i].getPosition();
 		QVector4D qPos( rPos.x, rPos.y, rPos.z, 1 );
 		m_aJointRotated[i] = ( qTransform * qPos ).toVector3D();
-		m_aJoint2D[i] = QPointF( 320 + m_aJointRotated[i].x() / 5, 240 - m_aJointRotated[i].y() / 5 );
+		m_aJoint2D[i] = QPointF( 320 + m_aJointRotated[i].x() / 2.5, 320 - m_aJointRotated[i].y() / 2.5 );
 	}
 }
 
