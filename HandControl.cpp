@@ -49,6 +49,7 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 		case NICS_NO_HAND:
 			HandReset();
 			m_HandIcon.hide();
+			m_qButtons.hide();
 			break;
 
 		case NICS_STANDBY:
@@ -63,6 +64,12 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 		case NICS_FIXED:
 			m_FixPos = CurrentPos();
 			m_HandIcon.m_eStatus = QHandIcon::HS_FIXED;
+			m_qButtons.show();
+			break;
+
+		case NICS_INPUT:
+			m_FixPos = CurrentPos();
+			
 			break;
 		}
 		return true;
@@ -75,7 +82,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 	//TODO: tmp only
 	float fMoveTh = 10;
 	float fFixZTh = -300;
-	boost::chrono::milliseconds tdPreFixTime(100);
+	boost::chrono::milliseconds tdPreFixTime(200);
 	boost::chrono::milliseconds tdFixTime(1000);
 
 	// add to points list
@@ -114,14 +121,49 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 			m_HandIcon.m_fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / tdFixTime.count();
 			if( m_HandIcon.m_fProgress > 1 )
 			{
+				m_qButtons.resetTransform();
+				m_qButtons.translate( rPt2D.x(), rPt2D.y() );
 				UpdateStatus( NICS_FIXED );
+			}
+		}
+	}
+
+	if( m_eControlStatus == NICS_FIXED )
+	{
+		for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
+		{
+			QGraphicsItem* pItem = itBut->first;
+			if( pItem->shape().contains( pItem->mapFromScene( rPt2D ) ) )
+			{
+				(itBut->second)();
+				m_pCurrentButton = pItem;
+				UpdateStatus( NICS_INPUT );
+				break;
 			}
 		}
 	}
 
 	if( m_eControlStatus == NICS_INPUT )
 	{
-		//TODO: the control after fix
-		UpdateStatus( NICS_NO_HAND );
+		if( !( m_pCurrentButton->shape().contains( m_pCurrentButton->mapFromScene( rPt2D ) ) ) )
+		{
+			m_eControlStatus = NICS_FIXED;
+		}
 	}
+}
+
+void QHandControl::BuildButtons()
+{
+	QPixmap imgArrow = QPixmap( "D:\\Heresy\\OpenNI\\NIController\\next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
+
+	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );
+	pNext->translate( 50, -30 );
+	m_qButtons.addToGroup( pNext );
+	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pNext, [](){ std::cout << "NEXT" << std::endl; } ) );
+
+	QGraphicsPixmapItem* pPerv = new QGraphicsPixmapItem( imgArrow );
+	pPerv->rotate( 180 );
+	pPerv->translate( 50, -30 );
+	m_qButtons.addToGroup( pPerv );
+	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pPerv, [](){ std::cout << "PERV" << std::endl; } ) );
 }

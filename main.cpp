@@ -74,6 +74,7 @@ public:
 		m_pUserMap = new QONI_UserMap( m_rUserTracker );
 		m_qScene.addItem( m_pUserMap );
 		m_pUserMap->setZValue( 2 );
+		//m_pUserMap->setOpacity( 0.5 );
 
 		m_qScene.addItem( &m_mHandControl );
 		m_mHandControl.setZValue( 1 );

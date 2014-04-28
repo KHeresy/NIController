@@ -1,6 +1,10 @@
 #pragma once
 
 #pragma region Header Files
+// STL Header
+#include <functional>
+#include <vector>
+
 // Boost Header
 #include <boost/chrono.hpp>
 #include <boost/circular_buffer.hpp>
@@ -75,11 +79,15 @@ public:
 public:
 	QHandControl()
 	{
-		m_eControlStatus	= NICS_NO_HAND;
 		m_aTrackList.set_capacity( 150 );
 		m_qRect.setRect( 0, 0, 640, 480 );
+		BuildButtons();
 
 		addToGroup( &m_HandIcon );
+		addToGroup( &m_qButtons );
+
+		m_eControlStatus	= NICS_INPUT;
+		UpdateStatus( NICS_NO_HAND );
 	}
 
 	void HandReset()
@@ -134,11 +142,16 @@ private:
 		return m_aTrackList.back();
 	}
 
+	void BuildButtons();
+
 private:
-	QHandIcon		m_HandIcon;
-	QRectF			m_qRect;
-	EControlStatus	m_eControlStatus;
+	QHandIcon			m_HandIcon;
+	QGraphicsItemGroup	m_qButtons;
+	QRectF				m_qRect;
+	EControlStatus		m_eControlStatus;
 
 	SHandPos	m_FixPos;
 	boost::circular_buffer<SHandPos>	m_aTrackList;
+	std::vector< std::pair<QGraphicsItem*,std::function<void()> > >	m_vButtons;
+	QGraphicsItem*	m_pCurrentButton;
 };
