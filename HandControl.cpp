@@ -163,7 +163,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 void QHandControl::BuildButtons()
 {
 	//TODO: should process as parameter
-	QPixmap imgArrow = QPixmap( "next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
+	QPixmap imgArrow = QPixmap( "D:\\Heresy\\OpenNI\\NIController\\next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
 
 	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );
 	pNext->translate( 50, -30 );

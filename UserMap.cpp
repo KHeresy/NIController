@@ -82,6 +82,7 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 	qTransform = qTransform.inverted();
 	#pragma endregion
 	
+	#pragma region transform joints position
 	for( int i = 0; i < m_aJointRotated.size(); ++ i )
 	{
 		const auto& rPos = m_aJointOri[i].getPosition();
@@ -90,6 +91,7 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 		m_aJoint2D[i] = QPointF(	m_vPositionShift.x() + m_aJointRotated[i].x() * m_fScale, 
 									m_vPositionShift.y() - m_aJointRotated[i].y() * m_fScale );
 	}
+	#pragma endregion
 }
 
 bool QONI_UserMap::Update()

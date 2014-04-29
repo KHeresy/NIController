@@ -123,7 +123,7 @@ public:
 		return m_UserImage.boundingRect();
 	}
 
-public:
+private:
 	nite::UserTracker&		m_rUserTracker;
 	QGraphicsPixmapItem		m_UserImage;
 	QONI_Skeleton			m_UserSkeleton;
