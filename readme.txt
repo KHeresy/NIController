@@ -15,3 +15,6 @@ Requirement:
 	GUI and matirx computing
 	http://qt-project.org/
 
+5. Boost C++ Libraries
+	http://www.boost.org/
+
