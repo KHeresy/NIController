@@ -54,6 +54,15 @@ public:
 class QONI_Skeleton : public QGraphicsItem
 {
 public:
+	QONI_Skeleton()
+	{
+		m_fScale			= 1.0f / 2.5f;
+		m_vPositionShift	= QVector2D( 320, 320 );
+
+		m_qSkeletonPen.setWidth( 3 );
+		m_qSkeletonPen.setColor( qRgba( 64, 64, 255, 192 ) );
+	}
+
 	QRectF boundingRect() const
 	{
 		QRectF qRect( m_aJoint2D[0], QSizeF( 1, 1 ) );
@@ -67,6 +76,10 @@ public:
 	void SetSkeleton( const nite::Skeleton& rSkeleton );
 
 public:
+	float		m_fScale;
+	QVector2D	m_vPositionShift;
+	QPen		m_qSkeletonPen;
+
 	std::array<QPointF,15>				m_aJoint2D;
 	std::array<QVector3D,15>			m_aJointRotated;
 	std::array<nite::SkeletonJoint,15>	m_aJointOri;

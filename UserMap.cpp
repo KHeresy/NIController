@@ -3,9 +3,7 @@
 void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	// set pen for drawing
-	QPen pen( qRgba( 64, 64, 255, 192 ) );
-	pen.setWidth( 3 );
-	painter->setPen( pen );
+	painter->setPen( m_qSkeletonPen );
 
 	// draw head
 	painter->drawLine( m_aJoint2D[0], m_aJoint2D[1] );
@@ -35,10 +33,11 @@ void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *o
 		float fD = m_aJointRotated[i].z();
 		if( fD > 0 )
 		{
-			painter->setPen( pen );
+			painter->setPen( m_qSkeletonPen );
 		}
 		else
 		{
+			//TODO: should controlled by parameter
 			fD = min( 1.0f, -fD / 500 );
 			QPen pen1( qRgba( fD * 255, fD * 255, 64, 255 ) );
 			pen1.setWidth( 3 );
@@ -88,7 +87,8 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 		const auto& rPos = m_aJointOri[i].getPosition();
 		QVector4D qPos( rPos.x, rPos.y, rPos.z, 1 );
 		m_aJointRotated[i] = ( qTransform * qPos ).toVector3D();
-		m_aJoint2D[i] = QPointF( 320 + m_aJointRotated[i].x() / 2.5, 320 - m_aJointRotated[i].y() / 2.5 );
+		m_aJoint2D[i] = QPointF(	m_vPositionShift.x() + m_aJointRotated[i].x() * m_fScale, 
+									m_vPositionShift.y() - m_aJointRotated[i].y() * m_fScale );
 	}
 }
 
