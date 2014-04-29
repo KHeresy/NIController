@@ -114,9 +114,9 @@ public:
 	{
 		m_fHandIconSize			= 50;
 		m_fHandMoveThreshold	= 25;
-		m_fHandForwardDistance	= 300;
-		m_tdPreFixTime			= boost::chrono::milliseconds( 200 );
-		m_tdFixTime				= boost::chrono::milliseconds( 1000 );
+		m_fHandForwardDistance	= 250;
+		m_tdPreFixTime			= boost::chrono::milliseconds( 100 );
+		m_tdFixTime				= boost::chrono::milliseconds( 500 );
 
 		m_HandIcon.SetSize( m_fHandIconSize );
 
@@ -237,5 +237,6 @@ private:
 	SHandPos	m_FixPos;
 	boost::circular_buffer<SHandPos>	m_aTrackList;
 	std::vector< std::pair<QGraphicsItem*,std::function<void()> > >	m_vButtons;
-	QGraphicsItem*	m_pCurrentButton;
+	std::vector< std::pair<QGraphicsItem*,std::function<void()> > >::iterator	m_itCurrentButton;
+	TTimePoint		m_tpFirstIn;
 };

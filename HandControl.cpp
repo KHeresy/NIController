@@ -77,6 +77,7 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 			m_FixPos = CurrentPos();
 			m_HandIcon.SetStatus( QHandIcon::HS_FIXED );
 			m_qButtons.show();
+			m_itCurrentButton = m_vButtons.end();
 			break;
 
 		case NICS_INPUT:
@@ -135,27 +136,46 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 		}
 	}
 
+	auto funcCheck = []( const QGraphicsItem* pItem, const QPointF& rPT ){
+		return pItem->shape().contains( pItem->mapFromScene( rPT ) );
+	};
+
 	if( m_eControlStatus == NICS_FIXED )
 	{
-		//TODO: Should avoid multiple invoke via hand shacking
-		for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
+		if( m_itCurrentButton == m_vButtons.end() )
 		{
-			QGraphicsItem* pItem = itBut->first;
-			if( pItem->shape().contains( pItem->mapFromScene( rPt2D ) ) )
+			for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
 			{
-				(itBut->second)();
-				m_pCurrentButton = pItem;
-				UpdateStatus( NICS_INPUT );
-				break;
+				if( funcCheck( itBut->first, rPt2D ) )
+				{
+					m_itCurrentButton = itBut;
+					m_tpFirstIn = boost::chrono::system_clock::now();
+					break;
+				}
+			}
+		}
+		else
+		{
+			if( funcCheck( m_itCurrentButton->first, rPt2D ) )
+			{
+				if( ( boost::chrono::system_clock::now() - m_tpFirstIn ) > m_tdPreFixTime )
+				{
+					(m_itCurrentButton->second)();
+					UpdateStatus( NICS_INPUT );
+				}
+			}
+			else
+			{
+				m_itCurrentButton = m_vButtons.end();
 			}
 		}
 	}
 
 	if( m_eControlStatus == NICS_INPUT )
 	{
-		if( !( m_pCurrentButton->shape().contains( m_pCurrentButton->mapFromScene( rPt2D ) ) ) )
+		if( !funcCheck( m_itCurrentButton->first, rPt2D ) )
 		{
-			m_eControlStatus = NICS_FIXED;
+			UpdateStatus( NICS_FIXED );
 		}
 	}
 }
@@ -178,7 +198,7 @@ void QHandControl::BuildButtons()
 	pPerv->translate( 50, -30 );
 	m_qButtons.addToGroup( pPerv );
 	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pPerv, [](){
-		std::cout << "PERV" << std::endl;
+		std::cout << "previous" << std::endl;
 		SendKey( VK_PRIOR );
 	} ) );
 }
