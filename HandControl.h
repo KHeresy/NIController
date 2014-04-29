@@ -14,6 +14,9 @@
 
 #pragma endregion
 
+/**
+ * The icon of hand position
+ */
 class QHandIcon : public QGraphicsItem
 {
 public:
@@ -25,26 +28,57 @@ public:
 	};
 
 public:
+	QPen	m_penGeneral;			/**< The pen used in HS_GENERAL status */
+	QPen	m_penFixing;			/**< The pen used in HS_FIXING status */
+	QPen	m_penFixingProgress;	/**< The pen used in HS_FIXING status for progress */
+	QPen	m_penFixed;				/**< The pen used in HS_FIXED status (border) */
+	QBrush	m_brushFixed;			/**< The brush used in HS_FIXED status (fill) */
+
+public:
 	QHandIcon( float fSize = 50 )
 	{
 		m_eStatus	= HS_GENERAL;
 		m_fProgress	= 0.0f;
 
+		// drawing parameter in HS_GENERAL status
+		m_penGeneral.setColor( qRgba( 255, 255, 0, 128 ) );
+		m_penGeneral.setWidth( 5 );
+
+		// drawing parameter in HS_FIXING status
+		m_penFixing.setColor( qRgba( 255, 255, 0, 255 ) );
+		m_penFixing.setWidth( 5 );
+
+		m_penFixingProgress.setColor( qRgba( 0, 255, 0, 255 ) );
+		m_penFixingProgress.setWidth( 15 );
+
+		// drawing parameter in HS_FIXED status
+		m_penFixed.setColor( qRgba( 0, 0, 0, 0 ) );
+		m_brushFixed.setColor( qRgba( 255, 0, 0, 128 ) );
+
 		SetSize( fSize );
 		hide();
 	}
 
+	/**
+	 * Set the size of the hand icon
+	 */
 	void SetSize( float fSize )
 	{
 		float fHS = fSize / 2;
 		m_Rect.setRect( -fHS, -fHS, fSize, fSize );
 	}
 
+	/**
+	 * Update the status of the hand (the draw method will be changed)
+	 */
 	void SetStatus( const HAND_STATE& eStatus )
 	{
 		m_eStatus = eStatus;
 	}
 
+	/**
+	 * Update the hand icon progress. Only make effect when status is HS_FIXING
+	 */
 	void SetProgress( const float& fVal )
 	{
 		m_fProgress = fVal;
@@ -63,42 +97,17 @@ private:
 	float		m_fProgress;
 };
 
+/**
+ * Hand control system
+ */
 class QHandControl : public QGraphicsItemGroup
 {
 public:
-	typedef	boost::chrono::system_clock::time_point TTimePoint;
-
-	enum EControlStatus
-	{
-		NICS_NO_HAND,
-		NICS_STANDBY,
-		NICS_FIXING,
-		NICS_FIXED,
-		NICS_INPUT,
-	};
-
-	struct SHandPos
-	{
-		TTimePoint	tpTime;
-		QPointF		mPos2D;
-		QVector3D	mPos3D;
-
-		SHandPos(){}
-
-		SHandPos( const QPointF& pos2D, const QVector3D& pos3D )
-		{
-			tpTime = boost::chrono::system_clock::now();
-			mPos2D = pos2D;
-			mPos3D = pos3D;
-		}
-	};
-
-public:
-	float	m_fHandIconSize;
-	float	m_fHandMoveThreshold;
-	float	m_fHandForwardDistance;
-	boost::chrono::milliseconds	m_tdPreFixTime;
-	boost::chrono::milliseconds	m_tdFixTime;
+	float	m_fHandIconSize;					/**< The size of hand icon */ //TODO: should call fromn function, not here
+	float	m_fHandMoveThreshold;				/**< The movement threshold for fixing hand (2D) */
+	float	m_fHandForwardDistance;				/**< The forward distance threshold for initial fix hand */
+	boost::chrono::milliseconds	m_tdPreFixTime;	/**< The time start to fix */
+	boost::chrono::milliseconds	m_tdFixTime;	/**< The time to fix */
 
 public:
 	QHandControl()
@@ -122,19 +131,31 @@ public:
 		UpdateStatus( NICS_NO_HAND );
 	}
 
+	/**
+	 * Reset hand status, clear history
+	 */
 	void HandReset()
 	{
 		UpdateStatus( NICS_STANDBY );
 		m_aTrackList.clear();
 	}
 
+	/**
+	 * Update current hand point information
+	 */
 	void UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D );
 
+	/**
+	 * Set the hand as lost
+	 */
 	void HandLost()
 	{
 		UpdateStatus( NICS_NO_HAND );
 	}
 
+	/**
+	 * Set the region of this widget
+	 */
 	void SetRect( const QRectF& rRect )
 	{
 		m_qRect = rRect;
@@ -144,6 +165,37 @@ public:
 	{
 		return m_qRect;
 	}
+
+private:
+	typedef	boost::chrono::system_clock::time_point TTimePoint;
+
+	enum EControlStatus
+	{
+		NICS_NO_HAND,
+		NICS_STANDBY,
+		NICS_FIXING,
+		NICS_FIXED,
+		NICS_INPUT,
+	};
+
+	/**
+	 * Structure to save required data at each yime point
+	 */
+	struct SHandPos
+	{
+		TTimePoint	tpTime;
+		QPointF		mPos2D;
+		QVector3D	mPos3D;
+
+		SHandPos(){}
+
+		SHandPos( const QPointF& pos2D, const QVector3D& pos3D )
+		{
+			tpTime = boost::chrono::system_clock::now();
+			mPos2D = pos2D;
+			mPos3D = pos3D;
+		}
+	};
 
 private:
 	template<typename _TDuration>

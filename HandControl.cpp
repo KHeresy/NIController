@@ -24,31 +24,25 @@ void QHandIcon::paint( QPainter *pPainter, const QStyleOptionGraphicsItem *optio
 	{
 	case HS_GENERAL:
 		{
-			QPen mPen = QPen( qRgba( 255, 255, 0, 128 ) );
-			mPen.setWidth( 5 );
-			pPainter->setPen( mPen );
+			pPainter->setPen( m_penGeneral );
 			pPainter->drawArc( m_Rect, 0, 360 * 16 );
 		}
 		break;
 
 	case HS_FIXING:
 		{
-			QPen mPen1 = QPen( qRgba( 0, 255, 0, 255 ) );
-			mPen1.setWidth(15);
-			pPainter->setPen( mPen1 );
+			pPainter->setPen( m_penFixingProgress );
 			pPainter->drawArc( m_Rect, 90*16, 360 * 16 * m_fProgress );
 
-			QPen mPen = QPen( qRgba( 255, 255, 0, 255 ) );
-			mPen.setWidth( 5 );
-			pPainter->setPen( mPen );
+			pPainter->setPen( m_penFixing );
 			pPainter->drawArc( m_Rect, 0, 360 * 16 );
 		}
 		break;
 
 	case HS_FIXED:
 		{
-			pPainter->setPen( QPen( qRgba( 0, 0, 0, 0 ) ) );
-			pPainter->setBrush( QBrush( qRgba( 255, 0, 0, 128 ) ) );
+			pPainter->setPen( m_penFixed );
+			pPainter->setBrush( m_brushFixed );
 			pPainter->drawEllipse( m_Rect );
 		}
 		break;
