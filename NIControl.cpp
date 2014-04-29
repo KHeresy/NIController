@@ -80,15 +80,17 @@ bool QNIControl::InitialNIDevice( int w, int h)
 	if( NiTE::initialize() != nite::STATUS_OK )
 	{
 		QMessageBox::critical( NULL, "NiTE", "NiTE initialize error" );
-		return -1;
+		return false;
 	}
 
 	if( m_niUserTracker.create( &m_niDevice ) != nite::STATUS_OK )
 	{
 		QMessageBox::critical( NULL, "User Tracker", "UserTracker created failed" );
-		return -1;
+		return false;
 	}
 	#pragma endregion
+
+	return true;
 }
 
 void QNIControl::SetFramless( bool bTrue )

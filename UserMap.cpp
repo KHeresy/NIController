@@ -168,7 +168,7 @@ bool QONI_UserMap::Update()
 				// Analyze user skeleton
 				const auto& rSkeleton = pActiveUser->getSkeleton();
 				m_UserSkeleton.SetSkeleton( rSkeleton );
-				m_UserDirection.m_vDir = QVector2D( m_UserSkeleton.m_vDirection.x(), m_UserSkeleton.m_vDirection.z() ).normalized();
+				m_UserDirection.SetDirection( QVector2D( m_UserSkeleton.m_vDirection.x(), m_UserSkeleton.m_vDirection.z() ).normalized() );
 				m_UserSkeleton.show();
 			}
 		}

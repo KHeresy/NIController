@@ -23,6 +23,9 @@ public:
 	QNIControl( bool bFrameless = true );
 	~QNIControl();
 
+	/**
+	 * Initial OpenNI and NiTE
+	 */
 	bool InitialNIDevice( int w = 640, int h = 480 );
 
 	void Start()
@@ -32,9 +35,15 @@ public:
 
 	void SetFramless( bool bTrue );
 
+	void SetSkeletonSmoothing( float fValue )
+	{
+		m_niUserTracker.setSkeletonSmoothingFactor( fValue );
+	}
+
 private:
 	bool eventFilter(QObject *object, QEvent *event)
 	{
+		// block page down and up in self
 		if( event->type() == QEvent::KeyPress )
 		{
 			QKeyEvent *ke = static_cast<QKeyEvent *>(event);
@@ -48,6 +57,7 @@ private:
 
 	void keyPressEvent( QKeyEvent* pEvent )
 	{
+		// handle mode switch
 		switch( pEvent->key() )
 		{
 		case Qt::Key_F:

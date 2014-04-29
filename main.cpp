@@ -1,26 +1,18 @@
 #pragma region Header Files
 
-// STL Header
-#include <array>
-#include <iostream>
-#include <sstream>
-
-// Boost Header
-#include <boost/circular_buffer.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
-
 // Application header
-#include "UserMap.h"
-#include "HandControl.h"
 #include "NIControl.h"
 
 #pragma endregion
 
-QSettings*	g_pSetting;
-
 int main( int argc, char** argv )
 {
+	#pragma region options
+	//TODO: should load from file
+	int	iW = 640,
+		iH = 480;
+	#pragma endregion
+
 	#pragma region Qt Core
 	// Qt Application
 	QApplication qOpenNIApp( argc, argv );
@@ -29,9 +21,12 @@ int main( int argc, char** argv )
 	#pragma region Qt Widget
 	// Qt Window
 	QNIControl qWin(false);
-	qWin.InitialNIDevice( 640, 480 );
-	qWin.show();
+	qWin.InitialNIDevice( iW, iH );
+	qWin.SetSkeletonSmoothing( 0.75f );	//TODO: should handle from option
 	qWin.resize( 640, 480 );
+	qWin.show();
+
+	qWin.m_fJointConfidence;	//TODO: should assign from option
 	#pragma endregion
 
 	// main loop

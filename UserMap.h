@@ -1,5 +1,5 @@
 #pragma once
-
+#pragma region Header Files
 // STL Header
 #include <array>
 
@@ -10,15 +10,28 @@
 #include <OpenNI.h>
 #include <NiTE.h>
 
+#pragma endregion
+
 /**
  * The QGraphicsItem to draw user face direction
  */
 class QUserDirection : public QGraphicsItem
 {
 public:
+	QPen	m_qPen1;
+	QPen	m_qPen2;
+
+public:
 	QUserDirection( int uSize ) : QGraphicsItem()
 	{
-		m_qRect = QRectF( QPointF( 0, 0 ), QSizeF(uSize,uSize) );
+		m_qPen1.setColor( qRgb( 255, 255, 0 ) );
+		m_qPen1.setWidth( 3 );
+
+		m_qPen2.setColor( qRgb( 255, 0, 0 ) );
+		m_qPen2.setWidth( 5 );
+
+		float fS = 1.0f * uSize / 2;
+		m_qRect = QRectF( -fS, -fS, uSize, uSize );
 		m_vDir = QVector2D( 0, -1 );
 	}
 
@@ -30,20 +43,21 @@ public:
 	void paint( QPainter *painter,  const QStyleOptionGraphicsItem *option, QWidget *widget )
 	{
 		// p1
-		QPen pen( qRgb( 255, 255, 0 ) );
-		pen.setWidth( 3 );
-		painter->setPen( pen );
+		painter->setPen( m_qPen1 );
 		painter->drawEllipse( m_qRect );
 
 		// p2
-		pen.setColor( qRgb( 255, 0, 0 ) );
-		painter->setPen( pen );
-		pen.setWidth( 5 );
+		painter->setPen( m_qPen2 );
 		float r = m_qRect.width() / 2;
-		painter->drawLine( r, r, r + r * m_vDir.x(), r + r * m_vDir.y() );
+		painter->drawLine( 0, 0, r * m_vDir.x(), r * m_vDir.y() );
 	}
 
-public:
+	void SetDirection( const QVector2D& rVec )
+	{
+		m_vDir = rVec;
+	}
+
+private:
 	QRectF		m_qRect;
 	QVector2D	m_vDir;
 };
@@ -53,6 +67,11 @@ public:
  */
 class QONI_Skeleton : public QGraphicsItem
 {
+public:
+	float		m_fScale;
+	QVector2D	m_vPositionShift;
+	QPen		m_qSkeletonPen;
+
 public:
 	QONI_Skeleton()
 	{
@@ -76,10 +95,6 @@ public:
 	void SetSkeleton( const nite::Skeleton& rSkeleton );
 
 public:
-	float		m_fScale;
-	QVector2D	m_vPositionShift;
-	QPen		m_qSkeletonPen;
-
 	std::array<QPointF,15>				m_aJoint2D;
 	std::array<QVector3D,15>			m_aJointRotated;
 	std::array<nite::SkeletonJoint,15>	m_aJointOri;
