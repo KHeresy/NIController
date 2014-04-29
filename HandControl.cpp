@@ -96,12 +96,6 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 
 void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D )
 {
-	//TODO: tmp only
-	float fMoveTh = 25;
-	float fFixZTh = -300;
-	boost::chrono::milliseconds tdPreFixTime(200);
-	boost::chrono::milliseconds tdFixTime(1000);
-
 	// add to points list
 	SHandPos mPos( rPt2D, rPt3D );
 	m_aTrackList.push_back( mPos );
@@ -116,10 +110,10 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 	
 	if( m_eControlStatus == NICS_STANDBY )
 	{
-		if( rPt3D.z() < fFixZTh )
+		if( rPt3D.z() < -m_fHandForwardDistance )
 		{
 			// start float hand button if fix
-			if( Is2DPosFixFor( tdPreFixTime, fMoveTh ) )
+			if( Is2DPosFixFor( m_tdPreFixTime, m_fHandMoveThreshold ) )
 			{
 				UpdateStatus( NICS_FIXING );
 			}
@@ -129,13 +123,13 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 	// check if hand move out from button
 	if( m_eControlStatus == NICS_FIXING )
 	{
-		if( QLineF( m_FixPos.mPos2D, rPt2D ).length() > fMoveTh )
+		if( QLineF( m_FixPos.mPos2D, rPt2D ).length() > m_fHandMoveThreshold )
 		{
 			UpdateStatus( NICS_STANDBY );
 		}
 		else
 		{
-			m_HandIcon.m_fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / tdFixTime.count();
+			m_HandIcon.m_fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / m_tdFixTime.count();
 			if( m_HandIcon.m_fProgress > 1 )
 			{
 				m_qButtons.resetTransform();
@@ -171,7 +165,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 
 void QHandControl::BuildButtons()
 {
-	QPixmap imgArrow = QPixmap( "D:\\Heresy\\OpenNI\\NIController\\next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
+	QPixmap imgArrow = QPixmap( "next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
 
 	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );
 	pNext->translate( 50, -30 );

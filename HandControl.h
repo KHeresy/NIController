@@ -77,8 +77,19 @@ public:
 	};
 
 public:
+	float	m_fHandMoveThreshold;
+	float	m_fHandForwardDistance;
+	boost::chrono::milliseconds	m_tdPreFixTime;
+	boost::chrono::milliseconds	m_tdFixTime;
+
+public:
 	QHandControl()
 	{
+		m_fHandMoveThreshold	= 25;
+		m_fHandForwardDistance	= 300;
+		m_tdPreFixTime			= boost::chrono::milliseconds( 200 );
+		m_tdFixTime				= boost::chrono::milliseconds( 1000 );
+
 		m_aTrackList.set_capacity( 150 );
 		m_qRect.setRect( 0, 0, 640, 480 );
 		BuildButtons();
