@@ -19,6 +19,7 @@ void SendKey( WORD key )
 
 void QHandIcon::paint( QPainter *pPainter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
+	//TODO: should process as parameter
 	switch( m_eStatus )
 	{
 	case HS_GENERAL:
@@ -70,17 +71,17 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 			break;
 
 		case NICS_STANDBY:
-			m_HandIcon.m_eStatus = QHandIcon::HS_GENERAL;
+			m_HandIcon.SetStatus( QHandIcon::HS_GENERAL );
 			break;
 
 		case NICS_FIXING:
-			m_HandIcon.m_eStatus = QHandIcon::HS_FIXING;
+			m_HandIcon.SetStatus( QHandIcon::HS_FIXING );
 			m_FixPos = CurrentPos();
 			break;
 
 		case NICS_FIXED:
 			m_FixPos = CurrentPos();
-			m_HandIcon.m_eStatus = QHandIcon::HS_FIXED;
+			m_HandIcon.SetStatus( QHandIcon::HS_FIXED );
 			m_qButtons.show();
 			break;
 
@@ -129,8 +130,9 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 		}
 		else
 		{
-			m_HandIcon.m_fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / m_tdFixTime.count();
-			if( m_HandIcon.m_fProgress > 1 )
+			float fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / m_tdFixTime.count();
+			m_HandIcon.SetProgress( fProgress );
+			if( fProgress > 1 )
 			{
 				m_qButtons.resetTransform();
 				m_qButtons.translate( rPt2D.x(), rPt2D.y() );
@@ -141,6 +143,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 
 	if( m_eControlStatus == NICS_FIXED )
 	{
+		//TODO: Should avoid multiple invoke via hand shacking
 		for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
 		{
 			QGraphicsItem* pItem = itBut->first;
@@ -165,6 +168,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 
 void QHandControl::BuildButtons()
 {
+	//TODO: should process as parameter
 	QPixmap imgArrow = QPixmap( "next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
 
 	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );

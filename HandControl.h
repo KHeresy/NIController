@@ -25,17 +25,29 @@ public:
 	};
 
 public:
-	QRectF		m_Rect;
-	HAND_STATE	m_eStatus;
-	float		m_fProgress;
-
-public:
-	QHandIcon()
+	QHandIcon( float fSize = 50 )
 	{
 		m_eStatus	= HS_GENERAL;
-		m_fProgress	= 0.5f;
-		m_Rect.setRect( -25, -25, 50, 50 );
+		m_fProgress	= 0.0f;
+
+		SetSize( fSize );
 		hide();
+	}
+
+	void SetSize( float fSize )
+	{
+		float fHS = fSize / 2;
+		m_Rect.setRect( -fHS, -fHS, fSize, fSize );
+	}
+
+	void SetStatus( const HAND_STATE& eStatus )
+	{
+		m_eStatus = eStatus;
+	}
+
+	void SetProgress( const float& fVal )
+	{
+		m_fProgress = fVal;
 	}
 
 	QRectF boundingRect() const
@@ -44,6 +56,11 @@ public:
 	}
 
 	void paint( QPainter *pPainter, const QStyleOptionGraphicsItem *option, QWidget *widget );
+
+private:
+	QRectF		m_Rect;
+	HAND_STATE	m_eStatus;
+	float		m_fProgress;
 };
 
 class QHandControl : public QGraphicsItemGroup
@@ -77,6 +94,7 @@ public:
 	};
 
 public:
+	float	m_fHandIconSize;
 	float	m_fHandMoveThreshold;
 	float	m_fHandForwardDistance;
 	boost::chrono::milliseconds	m_tdPreFixTime;
@@ -85,10 +103,13 @@ public:
 public:
 	QHandControl()
 	{
+		m_fHandIconSize			= 50;
 		m_fHandMoveThreshold	= 25;
 		m_fHandForwardDistance	= 300;
 		m_tdPreFixTime			= boost::chrono::milliseconds( 200 );
 		m_tdFixTime				= boost::chrono::milliseconds( 1000 );
+
+		m_HandIcon.SetSize( m_fHandIconSize );
 
 		m_aTrackList.set_capacity( 150 );
 		m_qRect.setRect( 0, 0, 640, 480 );
