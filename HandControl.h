@@ -53,7 +53,7 @@ public:
 
 		// drawing parameter in HS_FIXED status
 		m_penFixed.setColor( qRgba( 0, 0, 0, 0 ) );
-		m_brushFixed.setColor( qRgba( 255, 0, 0, 128 ) );
+		m_brushFixed = QBrush(qRgba( 255, 0, 0, 128 ));
 
 		SetSize( fSize );
 		hide();
