@@ -73,7 +73,7 @@ public:
 		// buttons
 		for( int i = 0; i < m_aButtons.size(); ++ i )
 		{
-			m_aButtons[i] = new QAbsNIButton( 200 );
+			m_aButtons[i] = new QAbsNIButton( 100 );
 			m_pButtons->addToGroup( m_aButtons[i] );
 		}
 		m_aButtons[0]->translate( -100, 0 );

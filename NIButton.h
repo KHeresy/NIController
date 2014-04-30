@@ -28,7 +28,7 @@ public:
 		m_iPressDepth	= 75;
 
 		float fS	= float(uSize) / 2;
-		m_Rect		= QRectF( -fS, -fS, fS, fS );
+		m_Rect		= QRectF( -fS, -fS, uSize, uSize );
 		m_eState	= OUT_SIDE;
 		m_fProgress	= 0.0f;
 		m_mFunc		= [](){};
