@@ -19,7 +19,6 @@ void SendKey( WORD key )
 
 void QHandIcon::paint( QPainter *pPainter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
-	//TODO: should process as parameter
 	switch( m_eStatus )
 	{
 	case HS_GENERAL:
@@ -125,7 +124,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 		}
 		else
 		{
-			float fProgress = float(boost::chrono::duration_cast<boost::chrono::milliseconds>( mPos.tpTime - m_FixPos.tpTime ).count()) / m_tdFixTime.count();
+			float fProgress = ComputeProgress( mPos.tpTime - m_FixPos.tpTime, m_tdFixTime );
 			m_HandIcon.SetProgress( fProgress );
 			if( fProgress > 1 )
 			{
@@ -158,7 +157,7 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 		{
 			if( funcCheck( m_itCurrentButton->first, rPt2D ) )
 			{
-				if( ( boost::chrono::system_clock::now() - m_tpFirstIn ) > m_tdPreFixTime )
+				if( ( boost::chrono::system_clock::now() - m_tpFirstIn ) > m_tdInvokeTime )
 				{
 					(m_itCurrentButton->second)();
 					UpdateStatus( NICS_INPUT );
