@@ -12,6 +12,7 @@
 // QT Header
 #include <QtGui/QtGui>
 
+#include "NIButton.h"
 #pragma endregion
 
 /**
@@ -108,7 +109,6 @@ public:
 	float	m_fHandForwardDistance;				/**< The forward distance threshold for initial fix hand */
 	boost::chrono::milliseconds	m_tdPreFixTime;	/**< The time start to fix */
 	boost::chrono::milliseconds	m_tdFixTime;	/**< The time to fix */
-	boost::chrono::milliseconds	m_tdInvokeTime;	/**< The time to invoke button event */
 
 public:
 	QHandControl()
@@ -118,7 +118,6 @@ public:
 		m_fHandForwardDistance	= 250;
 		m_tdPreFixTime			= boost::chrono::milliseconds( 100 );
 		m_tdFixTime				= boost::chrono::milliseconds( 500 );
-		m_tdInvokeTime			= boost::chrono::milliseconds( 250 );
 
 		m_HandIcon.SetSize( m_fHandIconSize );
 
@@ -244,7 +243,7 @@ private:
 
 	SHandPos	m_FixPos;
 	boost::circular_buffer<SHandPos>	m_aTrackList;
-	std::vector< std::pair<QGraphicsItem*,std::function<void()> > >	m_vButtons;
-	std::vector< std::pair<QGraphicsItem*,std::function<void()> > >::iterator	m_itCurrentButton;
+	std::vector<QBaseProgressButton*>	m_vButtons;
+	std::vector<QBaseProgressButton*>::iterator	m_itCurrentButton;
 	TTimePoint		m_tpFirstIn;
 };

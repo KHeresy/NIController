@@ -129,75 +129,46 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 			if( fProgress > 1 )
 			{
 				m_qButtons.resetTransform();
-				m_qButtons.translate( rPt2D.x(), rPt2D.y() );
+				m_qButtons.translate( rPt2D.x(), rPt2D.y() + 50 );
 				UpdateStatus( NICS_FIXED );
 			}
 		}
 	}
 
-	auto funcCheck = []( const QGraphicsItem* pItem, const QPointF& rPT ){
-		return pItem->shape().contains( pItem->mapFromScene( rPT ) );
-	};
-
 	if( m_eControlStatus == NICS_FIXED )
 	{
-		if( m_itCurrentButton == m_vButtons.end() )
+		for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
 		{
-			for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
+			if( (*itBut)->CheckInSide( rPt2D, rPt3D.z() ) )
 			{
-				if( funcCheck( itBut->first, rPt2D ) )
-				{
-					m_itCurrentButton = itBut;
-					m_tpFirstIn = boost::chrono::system_clock::now();
-					break;
-				}
-			}
-		}
-		else
-		{
-			if( funcCheck( m_itCurrentButton->first, rPt2D ) )
-			{
-				if( ( boost::chrono::system_clock::now() - m_tpFirstIn ) > m_tdInvokeTime )
-				{
-					(m_itCurrentButton->second)();
-					UpdateStatus( NICS_INPUT );
-				}
-			}
-			else
-			{
-				m_itCurrentButton = m_vButtons.end();
 			}
 		}
 	}
 
 	if( m_eControlStatus == NICS_INPUT )
 	{
-		if( !funcCheck( m_itCurrentButton->first, rPt2D ) )
-		{
-			UpdateStatus( NICS_FIXED );
-		}
 	}
 }
 
 void QHandControl::BuildButtons()
 {
-	//TODO: should process as parameter
-	QPixmap imgArrow = QPixmap( "D:\\Heresy\\OpenNI\\NIController\\next.png" ).scaled( QSize( 60, 60 ), Qt::KeepAspectRatio );
-
-	QGraphicsPixmapItem* pNext = new QGraphicsPixmapItem( imgArrow );
-	pNext->translate( 50, -30 );
-	m_qButtons.addToGroup( pNext );
-	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pNext, [](){
+	QTimerButton* pBut1 = new QTimerButton();
+	pBut1->translate( 80, -50 );
+	pBut1->m_duTimeToPress = boost::chrono::milliseconds( 300 );
+	pBut1->m_funcRelease = [](){
 		std::cout << "NEXT" << std::endl;
 		SendKey( VK_NEXT );
-	} ) );
+	};
+	m_qButtons.addToGroup( pBut1 );
+	m_vButtons.push_back( pBut1 );
 
-	QGraphicsPixmapItem* pPerv = new QGraphicsPixmapItem( imgArrow );
-	pPerv->rotate( 180 );
-	pPerv->translate( 50, -30 );
-	m_qButtons.addToGroup( pPerv );
-	m_vButtons.push_back( std::pair<QGraphicsItem*,std::function<void()> >( pPerv, [](){
+	QTimerButton* pBut2 = new QTimerButton();
+	pBut2->translate( -80, -50 );
+	pBut2->m_duTimeToPress = boost::chrono::milliseconds( 300 );
+	pBut2->m_funcRelease = [](){
 		std::cout << "previous" << std::endl;
 		SendKey( VK_PRIOR );
-	} ) );
+	};
+	m_qButtons.addToGroup( pBut2 );
+	m_vButtons.push_back( pBut2 );
 }

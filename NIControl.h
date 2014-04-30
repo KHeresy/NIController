@@ -10,7 +10,6 @@
 // Application header
 #include "UserMap.h"
 #include "HandControl.h"
-
 #pragma endregion
 
 // Main Window

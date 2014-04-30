@@ -38,7 +38,7 @@ void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *o
 		else
 		{
 			//TODO: should controlled by parameter
-			fD = min( 1.0f, -fD / 500 );
+			fD = std::min( 1.0f, -fD / 500 );
 			QPen pen1( qRgba( fD * 255, fD * 255, 64, 255 ) );
 			pen1.setWidth( 3 );
 			painter->setPen( pen1 );

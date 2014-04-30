@@ -51,7 +51,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX ;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OPENNI2_INCLUDE);$(NITE2_INCLUDE);D:\Heresy\Engine3D2\external\include\Qt;D:\Heresy\Engine3D2\external\include\</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -71,7 +71,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX ;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OPENNI2_INCLUDE);$(NITE2_INCLUDE);D:\Heresy\Engine3D2\external\include\Qt;D:\Heresy\Engine3D2\external\include\</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
@@ -93,7 +93,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandControl.h" />
+    <ClInclude Include="NIButton.h" />
     <ClInclude Include="NIControl.h" />
+    <ClInclude Include="QNIButton.h" />
     <ClInclude Include="UserMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
