@@ -12,6 +12,9 @@
 #include <QtGui/QtGui>
 #pragma endregion
 
+/**
+ * A baisc circle button with progress arc
+ */
 class QBaseProgressButton : public QGraphicsItem
 {
 public:
@@ -26,9 +29,7 @@ public:
 		m_funcPress		= [](){};
 		m_funcRelease	= [](){};
 
-		float fSize = 100;
-		float fS = fSize / 2;
-		m_qRect = QRectF( -fS, -fS, fSize, fSize );
+		SetSize( 70 );
 
 		m_aColor[0] = QBrush( qRgba( 0, 128, 128, 128 ) );
 		m_aColor[1] = QBrush( qRgba( 128, 128, 255, 128 ) );
@@ -57,6 +58,12 @@ public:
 
 	virtual bool CheckInSide( const QPointF& rPos, const float& fDepth ) = 0;
 
+	virtual void SetSize( float fSize )
+	{
+		float fS = fSize / 2;
+		m_qRect = QRectF( -fS, -fS, fSize, fSize );
+	}
+
 protected:
 	enum ESTATUS
 	{
@@ -73,6 +80,9 @@ protected:
 	std::array<QBrush, 3>	m_aColor;
 };
 
+/**
+ * A time-base button.
+ */
 class QTimerButton : public QBaseProgressButton
 {
 public:
@@ -128,6 +138,9 @@ protected:
 	TTimeColock::time_point	m_tpFirstIn;
 };
 
+/**
+ * A depth-base button
+ */
 class QDepthButton : public QBaseProgressButton
 {
 public:
