@@ -15,10 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NIButton.h">
+    <ClInclude Include="UserMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UserMap.h">
+    <ClInclude Include="HandControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NIControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -27,6 +30,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UserMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HandControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NIControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

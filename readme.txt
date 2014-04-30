@@ -8,9 +8,13 @@ Requirement:
 
 3. PrimeSense NiTE 2:
 	Human skeleton tracking
-	No longer variable
+	No longer officially available, but can be found by Google
+	(ex: https://bitbucket.org/kaorun55/openni-2.2/)
 
 4. Qt:
 	GUI and matirx computing
 	http://qt-project.org/
+
+5. Boost C++ Libraries
+	http://www.boost.org/
 
