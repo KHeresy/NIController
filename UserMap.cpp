@@ -73,7 +73,7 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 	QQuaternion qTRotation( tr.w, tr.x, tr.y, tr.z );
 	m_vDirection = qTRotation.rotatedVector( QVector3D( 0, 0, -1 ) );
 
-	if( !m_bKeepTransform )
+	if( m_bUpdateransform )
 	{
 		// compute transformation matrix
 		m_qTransform.setToIdentity();

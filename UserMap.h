@@ -81,7 +81,7 @@ public:
 		m_qSkeletonPen.setWidth( 3 );
 		m_qSkeletonPen.setColor( qRgba( 64, 64, 255, 192 ) );
 
-		m_bKeepTransform	= false;
+		m_bUpdateransform	= true;
 	}
 
 	QRectF boundingRect() const
@@ -98,7 +98,7 @@ public:
 
 	void KeepTransform( bool bKeep = true )
 	{
-		m_bKeepTransform = true;
+		m_bUpdateransform = !bKeep;
 	}
 
 public:
@@ -108,7 +108,7 @@ public:
 	QVector3D	m_vDirection;
 
 private:
-	bool		m_bKeepTransform;
+	bool		m_bUpdateransform;
 	QMatrix4x4	m_qTransform;
 };
 
