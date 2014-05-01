@@ -38,7 +38,7 @@ void QONI_Skeleton::paint( QPainter *painter,  const QStyleOptionGraphicsItem *o
 		else
 		{
 			//TODO: should controlled by parameter
-			fD = min( 1.0f, -fD / 500 );
+			fD = std::min( 1.0f, -fD / 500 );
 			QPen pen1( qRgba( fD * 255, fD * 255, 64, 255 ) );
 			pen1.setWidth( 3 );
 			painter->setPen( pen1 );
@@ -73,13 +73,15 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 	QQuaternion qTRotation( tr.w, tr.x, tr.y, tr.z );
 	m_vDirection = qTRotation.rotatedVector( QVector3D( 0, 0, -1 ) );
 
-	// compute transformation matrix
-	QMatrix4x4 qTransform;
-	qTransform.setToIdentity();
-	auto tt = m_aJointOri[8].getPosition();
-	qTransform.translate( tt.x, tt.y, tt.z );
-	qTransform.rotate( qTRotation );
-	qTransform = qTransform.inverted();
+	if( m_bUpdateransform )
+	{
+		// compute transformation matrix
+		m_qTransform.setToIdentity();
+		auto tt = m_aJointOri[8].getPosition();
+		m_qTransform.translate( tt.x, tt.y, tt.z );
+		m_qTransform.rotate( qTRotation );
+		m_qTransform = m_qTransform.inverted();
+	}
 	#pragma endregion
 	
 	#pragma region transform joints position
@@ -87,7 +89,7 @@ void QONI_Skeleton::SetSkeleton( const nite::Skeleton& rSkeleton )
 	{
 		const auto& rPos = m_aJointOri[i].getPosition();
 		QVector4D qPos( rPos.x, rPos.y, rPos.z, 1 );
-		m_aJointRotated[i] = ( qTransform * qPos ).toVector3D();
+		m_aJointRotated[i] = ( m_qTransform * qPos ).toVector3D();
 		m_aJoint2D[i] = QPointF(	m_vPositionShift.x() + m_aJointRotated[i].x() * m_fScale, 
 									m_vPositionShift.y() - m_aJointRotated[i].y() * m_fScale );
 	}

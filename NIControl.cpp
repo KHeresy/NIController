@@ -30,6 +30,9 @@ QNIControl::QNIControl( bool bFrameless ) :
 
 	m_qScene.addItem( &m_mHandControl );
 	m_mHandControl.setZValue( 1 );
+	QONI_UserMap* pUMap = m_pUserMap;
+	m_mHandControl.m_funcStartInput	= [pUMap](){ pUMap->KeepSkeletonTransform( true ); };
+	m_mHandControl.m_funcEndInput	= [pUMap](){ pUMap->KeepSkeletonTransform( false ); };
 
 	SetFramless( bFrameless );
 }
