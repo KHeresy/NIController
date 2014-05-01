@@ -61,11 +61,13 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 			HandReset();
 			m_HandIcon.hide();
 			m_qButtons.hide();
+			m_funcEndInput();
 			break;
 
 		case NICS_STANDBY:
 			m_HandIcon.SetStatus( QHandIcon::HS_GENERAL );
 			m_qButtons.hide();
+			m_funcEndInput();
 			break;
 
 		case NICS_FIXING:
@@ -78,6 +80,7 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 			m_HandIcon.SetStatus( QHandIcon::HS_FIXED );
 			m_qButtons.show();
 			m_itCurrentButton = m_vButtons.end();
+			m_funcStartInput();
 			break;
 
 		case NICS_INPUT:

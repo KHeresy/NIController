@@ -80,6 +80,8 @@ public:
 
 		m_qSkeletonPen.setWidth( 3 );
 		m_qSkeletonPen.setColor( qRgba( 64, 64, 255, 192 ) );
+
+		m_bKeepTransform	= false;
 	}
 
 	QRectF boundingRect() const
@@ -94,11 +96,20 @@ public:
 
 	void SetSkeleton( const nite::Skeleton& rSkeleton );
 
+	void KeepTransform( bool bKeep = true )
+	{
+		m_bKeepTransform = true;
+	}
+
 public:
 	std::array<QPointF,15>				m_aJoint2D;
 	std::array<QVector3D,15>			m_aJointRotated;
 	std::array<nite::SkeletonJoint,15>	m_aJointOri;
 	QVector3D	m_vDirection;
+
+private:
+	bool		m_bKeepTransform;
+	QMatrix4x4	m_qTransform;
 };
 
 /**
@@ -131,6 +142,11 @@ public:
 	const QPointF& GetActiveUserJoint2D( const nite::JointType& eJoint ) const 
 	{
 		return m_UserSkeleton.m_aJoint2D[eJoint];
+	}
+
+	void KeepSkeletonTransform( bool bKeep )
+	{
+		m_UserSkeleton.KeepTransform( bKeep );
 	}
 
 	QRectF boundingRect() const
