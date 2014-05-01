@@ -65,6 +65,7 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 
 		case NICS_STANDBY:
 			m_HandIcon.SetStatus( QHandIcon::HS_GENERAL );
+			m_qButtons.hide();
 			break;
 
 		case NICS_FIXING:
@@ -137,6 +138,9 @@ void QHandControl::UpdateHandPoint( const QPointF& rPt2D, const QVector3D& rPt3D
 
 	if( m_eControlStatus == NICS_FIXED )
 	{
+		if( rPt3D.z() > -m_fHandForwardDistance )
+			UpdateStatus( NICS_STANDBY );
+
 		for( auto itBut = m_vButtons.begin(); itBut != m_vButtons.end(); ++ itBut )
 		{
 			if( (*itBut)->CheckInSide( rPt2D, rPt3D.z() ) )
@@ -155,7 +159,7 @@ void QHandControl::BuildButtons()
 	QTimerButton* pBut1 = new QTimerButton();
 	pBut1->translate( 80, -50 );
 	pBut1->m_duTimeToPress = boost::chrono::milliseconds( 300 );
-	pBut1->m_funcRelease = [](){
+	pBut1->m_funcPress = [](){
 		std::cout << "NEXT" << std::endl;
 		SendKey( VK_NEXT );
 	};
@@ -165,7 +169,7 @@ void QHandControl::BuildButtons()
 	QTimerButton* pBut2 = new QTimerButton();
 	pBut2->translate( -80, -50 );
 	pBut2->m_duTimeToPress = boost::chrono::milliseconds( 300 );
-	pBut2->m_funcRelease = [](){
+	pBut2->m_funcPress = [](){
 		std::cout << "previous" << std::endl;
 		SendKey( VK_PRIOR );
 	};
