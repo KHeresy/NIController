@@ -1,6 +1,10 @@
 #pragma once
 #pragma region Header Files
+// STL Header
+#include <array>
+
 // Qt Header
+#include <QtCore/QSettings>
 #include <QtGui/QtGui>
 
 // OpenNI and NiTE Header
@@ -16,16 +20,36 @@
 class QNIControl : public QWidget
 {
 public:
-	float	m_fJointConfidence;
+	float		m_fJointConfidence;
+	QSettings	m_qSetting;
 
 public:
-	QNIControl( bool bFrameless = true );
+	QNIControl( QString sINIFile = "" );
 	~QNIControl();
 
 	/**
 	 * Initial OpenNI and NiTE
 	 */
-	bool InitialNIDevice( int w = 640, int h = 480 );
+	bool InitialNIDevice()
+	{
+		QString s = m_qSetting.value( "OpenNI/Resolution", "640/480" ).toString();
+		QStringList a = s.split('/');
+		if( a.length() == 2 )
+		{
+			m_aResoultion[0] = a[0].toInt();
+			m_aResoultion[1] = a[1].toInt();
+		}
+		else
+		{
+			m_aResoultion[0] = 640;
+			m_aResoultion[1] = 480;
+		}
+		resize( m_aResoultion[0], m_aResoultion[1] );
+		m_mHandControl.SetRect( QRectF( 0, 0, m_aResoultion[0], m_aResoultion[1] ) );
+		return InitialNIDevice( m_aResoultion[0], m_aResoultion[1] );
+	}
+
+	bool InitialNIDevice( int w, int h );
 
 	void Start()
 	{
@@ -88,6 +112,7 @@ private:
 	};
 
 private:
+	std::array<unsigned int,2>	m_aResoultion;
 	bool			m_bFrameless;
 	EControlHand	m_eControlHand;
 

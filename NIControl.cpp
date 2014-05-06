@@ -1,9 +1,10 @@
 #include "NIControl.h"
 
-QNIControl::QNIControl( bool bFrameless ) :
+QNIControl::QNIControl( QString sINIFile ) :
+	m_qSetting( sINIFile, QSettings::IniFormat ),
 	QWidget(), m_qScene(), m_qView( &m_qScene, this ), m_qLayout(this)
 {
-	m_fJointConfidence	= 0.5f;
+	m_fJointConfidence	= m_qSetting.value( "OpenNI/JointConfidence", 0.5f ).toFloat();
 	m_eControlHand		= NICH_NO_HAND;
 
 	// configurate window
@@ -30,11 +31,17 @@ QNIControl::QNIControl( bool bFrameless ) :
 
 	m_qScene.addItem( &m_mHandControl );
 	m_mHandControl.setZValue( 1 );
-	QONI_UserMap* pUMap = m_pUserMap;
-	m_mHandControl.m_funcStartInput	= [pUMap](){ pUMap->KeepSkeletonTransform( true ); };
-	m_mHandControl.m_funcEndInput	= [pUMap](){ pUMap->KeepSkeletonTransform( false ); };
 
-	SetFramless( bFrameless );
+	QONI_UserMap* pUMap = m_pUserMap;
+	m_mHandControl.m_funcStartInput			= [pUMap](){ pUMap->KeepSkeletonTransform( true ); };
+	m_mHandControl.m_funcEndInput			= [pUMap](){ pUMap->KeepSkeletonTransform( false ); };
+	m_mHandControl.m_fHandMoveThreshold		= m_qSetting.value( "Control/MoveThreshold", 25 ).toFloat();
+	m_mHandControl.m_fHandForwardDistance	= m_qSetting.value( "Control/ForwardDistance", 250 ).toFloat();
+	m_mHandControl.m_tdPreFixTime			= boost::chrono::milliseconds( m_qSetting.value( "Control/PreFixTime", 100 ).toInt() );
+	m_mHandControl.m_tdFixTime				= boost::chrono::milliseconds( m_qSetting.value( "Control/FixTime", 500 ).toInt() );
+	m_mHandControl.m_tdInvokeTime			= boost::chrono::milliseconds( m_qSetting.value( "Control/InvokeTime", 200 ).toInt() );
+
+	SetFramless( false );
 }
 
 QNIControl::~QNIControl()
@@ -47,7 +54,7 @@ QNIControl::~QNIControl()
 	openni::OpenNI::shutdown();
 }
 
-bool QNIControl::InitialNIDevice( int w, int h)
+bool QNIControl::InitialNIDevice( int w, int h )
 {
 	#pragma region OpenNI
 	using namespace openni;
@@ -91,6 +98,7 @@ bool QNIControl::InitialNIDevice( int w, int h)
 		QMessageBox::critical( NULL, "User Tracker", "UserTracker created failed" );
 		return false;
 	}
+	SetSkeletonSmoothing( m_qSetting.value( "OpenNI/SkeletonSmooth", 0.75f ).toFloat() );
 	#pragma endregion
 
 	return true;
@@ -174,5 +182,5 @@ void QNIControl::timerEvent( QTimerEvent* pEvent )
 		}
 	}
 
-	m_qView.fitInView( 0, 0, 640, 480, Qt::KeepAspectRatio  );
+	m_qView.fitInView( 0, 0, m_aResoultion[0], m_aResoultion[1], Qt::KeepAspectRatio  );
 }

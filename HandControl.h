@@ -109,6 +109,7 @@ public:
 	float							m_fHandForwardDistance;	/**< The forward distance threshold for initial fix hand */
 	boost::chrono::milliseconds		m_tdPreFixTime;			/**< The time start to fix */
 	boost::chrono::milliseconds		m_tdFixTime;			/**< The time to fix */
+	boost::chrono::milliseconds		m_tdInvokeTime;			/**< The time to invoke button */	//TODO: no work now
 	std::function<void()>			m_funcStartInput;
 	std::function<void()>			m_funcEndInput;
 
@@ -120,6 +121,7 @@ public:
 		m_fHandForwardDistance	= 250;
 		m_tdPreFixTime			= boost::chrono::milliseconds( 100 );
 		m_tdFixTime				= boost::chrono::milliseconds( 500 );
+		m_tdInvokeTime			= boost::chrono::milliseconds( 300 );
 		m_funcStartInput		= [](){};
 		m_funcEndInput			= [](){};
 
