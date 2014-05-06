@@ -44,8 +44,6 @@ public:
 			m_aResoultion[0] = 640;
 			m_aResoultion[1] = 480;
 		}
-		resize( m_aResoultion[0], m_aResoultion[1] );
-		m_mHandControl.SetRect( QRectF( 0, 0, m_aResoultion[0], m_aResoultion[1] ) );
 		return InitialNIDevice( m_aResoultion[0], m_aResoultion[1] );
 	}
 
@@ -98,7 +96,7 @@ private:
 
 	void resizeEvent( QResizeEvent* pEvent )
 	{
-		m_qView.fitInView( m_pUserMap, Qt::KeepAspectRatio );
+		m_qView.fitInView( &m_mUserMap, Qt::KeepAspectRatio );
 	}
 
 	void timerEvent( QTimerEvent* pEvent );
@@ -120,7 +118,7 @@ private:
 	QGraphicsView	m_qView;
 	QGridLayout		m_qLayout;
 
-	QONI_UserMap*	m_pUserMap;
+	QONI_UserMap	m_mUserMap;
 	QHandControl	m_mHandControl;
 
 	openni::Device		m_niDevice;
