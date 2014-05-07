@@ -248,6 +248,4 @@ private:
 	SHandPos	m_FixPos;
 	boost::circular_buffer<SHandPos>	m_aTrackList;
 	std::vector<QBaseProgressButton*>	m_vButtons;
-	std::vector<QBaseProgressButton*>::iterator	m_itCurrentButton;
-	TTimePoint		m_tpFirstIn;
 };

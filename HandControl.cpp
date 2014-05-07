@@ -79,7 +79,6 @@ bool QHandControl::UpdateStatus( const QHandControl::EControlStatus& eStatus )
 			m_FixPos = CurrentPos();
 			m_HandIcon.SetStatus( QHandIcon::HS_FIXED );
 			m_qButtons.show();
-			m_itCurrentButton = m_vButtons.end();
 			m_funcStartInput();
 			break;
 
