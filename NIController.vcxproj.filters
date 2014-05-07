@@ -24,9 +24,6 @@
     <ClInclude Include="NIControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="QNIButton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NIButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
