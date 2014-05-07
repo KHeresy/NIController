@@ -22,7 +22,7 @@ public:
 	QPen	m_qPen2;
 
 public:
-	QUserDirection( int uSize ) : QGraphicsItem()
+	QUserDirection( float fSize = 40 ) : QGraphicsItem()
 	{
 		m_qPen1.setColor( qRgb( 255, 255, 0 ) );
 		m_qPen1.setWidth( 3 );
@@ -30,9 +30,14 @@ public:
 		m_qPen2.setColor( qRgb( 255, 0, 0 ) );
 		m_qPen2.setWidth( 5 );
 
-		float fS = 1.0f * uSize / 2;
-		m_qRect = QRectF( -fS, -fS, uSize, uSize );
 		m_vDir = QVector2D( 0, -1 );
+		SetSize( fSize );
+	}
+
+	void SetSize( float fSize )
+	{
+		float fS = fSize / 2;
+		m_qRect = QRectF( -fS, -fS, fSize, fSize );
 	}
 
 	QRectF boundingRect() const
@@ -118,16 +123,31 @@ private:
 class QONI_UserMap : public QGraphicsItemGroup
 {
 public:
-	QONI_UserMap( nite::UserTracker& rUserTracker ) : m_rUserTracker(rUserTracker), m_UserDirection(40)
+	QONI_UserMap( nite::UserTracker& rUserTracker ) : m_rUserTracker(rUserTracker)
 	{
 		addToGroup(&m_UserImage);
 		addToGroup(&m_UserSkeleton);
 		addToGroup(&m_UserDirection);
-		m_UserDirection.translate( 590, 430 );
+
+		SetSize( 640, 480 );
+
 		m_UserSkeleton.hide();
 	}
 
 	bool Update();
+
+	void SetSize( int w, int h )
+	{
+		float fDirSize = w / 16;
+		m_UserDirection.SetSize( fDirSize );
+		m_UserDirection.resetTransform();
+		m_UserDirection.translate( w - fDirSize, h - fDirSize );
+
+		m_UserSkeleton.m_vPositionShift = QVector2D( w / 2, h * 2.0f / 3 );
+		m_UserSkeleton.m_fScale = 1.0f * w / 1600;
+
+		m_qRect = QRectF( 0, 0, w, h );
+	}
 
 	const nite::SkeletonJoint& GetActiveUserJoint( const nite::JointType& eJoint ) const 
 	{
@@ -151,7 +171,7 @@ public:
 
 	QRectF boundingRect() const
 	{
-		return m_UserImage.boundingRect();
+		return m_qRect;
 	}
 
 private:
@@ -159,4 +179,5 @@ private:
 	QGraphicsPixmapItem		m_UserImage;
 	QONI_Skeleton			m_UserSkeleton;
 	QUserDirection			m_UserDirection;
+	QRectF					m_qRect;
 };

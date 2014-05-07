@@ -161,7 +161,7 @@ void QHandControl::BuildButtons()
 {
 	QTimerButton* pBut1 = new QTimerButton();
 	pBut1->translate( 80, -50 );
-	pBut1->m_duTimeToPress = boost::chrono::milliseconds( 300 );
+	pBut1->m_duTimeToPress = m_tdInvokeTime;
 	pBut1->m_funcPress = [](){
 		std::cout << "NEXT" << std::endl;
 		SendKey( VK_NEXT );
@@ -171,7 +171,7 @@ void QHandControl::BuildButtons()
 
 	QTimerButton* pBut2 = new QTimerButton();
 	pBut2->translate( -80, -50 );
-	pBut2->m_duTimeToPress = boost::chrono::milliseconds( 300 );
+	pBut2->m_duTimeToPress = m_tdInvokeTime;
 	pBut2->m_funcPress = [](){
 		std::cout << "previous" << std::endl;
 		SendKey( VK_PRIOR );

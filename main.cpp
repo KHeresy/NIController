@@ -7,23 +7,21 @@
 
 int main( int argc, char** argv )
 {
-	#pragma region options
-	//TODO: should load from file
-	int	iW = 640,
-		iH = 480;
-	#pragma endregion
-
 	#pragma region Qt Core
 	// Qt Application
 	QApplication qOpenNIApp( argc, argv );
 	#pragma endregion
 
 	#pragma region Qt Widget
+	QString sINIFile = "";
+	if( argc > 1 )
+		sINIFile = argv[1];
+	else
+		sINIFile = "NIController.ini";
+
 	// Qt Window
-	QNIControl qWin(false);
-	qWin.InitialNIDevice( iW, iH );
-	qWin.SetSkeletonSmoothing( 0.75f );	//TODO: should handle from option
-	qWin.resize( 640, 480 );
+	QNIControl qWin( sINIFile );
+	qWin.InitialNIDevice();
 	qWin.show();
 
 	qWin.m_fJointConfidence;	//TODO: should assign from option

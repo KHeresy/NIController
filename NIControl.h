@@ -1,6 +1,10 @@
 #pragma once
 #pragma region Header Files
+// STL Header
+#include <array>
+
 // Qt Header
+#include <QtCore/QSettings>
 #include <QtGui/QtGui>
 
 // OpenNI and NiTE Header
@@ -16,16 +20,34 @@
 class QNIControl : public QWidget
 {
 public:
-	float	m_fJointConfidence;
+	float		m_fJointConfidence;
+	QSettings	m_qSetting;
 
 public:
-	QNIControl( bool bFrameless = true );
+	QNIControl( QString sINIFile = "" );
 	~QNIControl();
 
 	/**
 	 * Initial OpenNI and NiTE
 	 */
-	bool InitialNIDevice( int w = 640, int h = 480 );
+	bool InitialNIDevice()
+	{
+		QString s = m_qSetting.value( "OpenNI/Resolution", "640/480" ).toString();
+		QStringList a = s.split('/');
+		if( a.length() == 2 )
+		{
+			m_aResoultion[0] = a[0].toInt();
+			m_aResoultion[1] = a[1].toInt();
+		}
+		else
+		{
+			m_aResoultion[0] = 640;
+			m_aResoultion[1] = 480;
+		}
+		return InitialNIDevice( m_aResoultion[0], m_aResoultion[1] );
+	}
+
+	bool InitialNIDevice( int w, int h );
 
 	void Start()
 	{
@@ -74,7 +96,7 @@ private:
 
 	void resizeEvent( QResizeEvent* pEvent )
 	{
-		m_qView.fitInView( m_pUserMap, Qt::KeepAspectRatio );
+		m_qView.fitInView( &m_mUserMap, Qt::KeepAspectRatio );
 	}
 
 	void timerEvent( QTimerEvent* pEvent );
@@ -88,6 +110,8 @@ private:
 	};
 
 private:
+	std::array<unsigned int,2>	m_aResoultion;
+	QRectF			m_qRect;
 	bool			m_bFrameless;
 	EControlHand	m_eControlHand;
 
@@ -95,7 +119,7 @@ private:
 	QGraphicsView	m_qView;
 	QGridLayout		m_qLayout;
 
-	QONI_UserMap*	m_pUserMap;
+	QONI_UserMap	m_mUserMap;
 	QHandControl	m_mHandControl;
 
 	openni::Device		m_niDevice;

@@ -104,29 +104,27 @@ private:
 class QHandControl : public QGraphicsItemGroup
 {
 public:
-	float							m_fHandIconSize;		/**< The size of hand icon */ //TODO: should call fromn function, not here
 	float							m_fHandMoveThreshold;	/**< The movement threshold for fixing hand (2D) */
 	float							m_fHandForwardDistance;	/**< The forward distance threshold for initial fix hand */
 	boost::chrono::milliseconds		m_tdPreFixTime;			/**< The time start to fix */
 	boost::chrono::milliseconds		m_tdFixTime;			/**< The time to fix */
+	boost::chrono::milliseconds		m_tdInvokeTime;			/**< The time to invoke button */	//TODO: no work now
 	std::function<void()>			m_funcStartInput;
 	std::function<void()>			m_funcEndInput;
 
 public:
 	QHandControl()
 	{
-		m_fHandIconSize			= 50;
 		m_fHandMoveThreshold	= 25;
 		m_fHandForwardDistance	= 250;
 		m_tdPreFixTime			= boost::chrono::milliseconds( 100 );
 		m_tdFixTime				= boost::chrono::milliseconds( 500 );
+		m_tdInvokeTime			= boost::chrono::milliseconds( 300 );
 		m_funcStartInput		= [](){};
 		m_funcEndInput			= [](){};
 
-		m_HandIcon.SetSize( m_fHandIconSize );
-
 		m_aTrackList.set_capacity( 150 );
-		m_qRect.setRect( 0, 0, 640, 480 );
+		SetRect( QRectF( 0, 0, 640, 480 ) );
 		BuildButtons();
 
 		addToGroup( &m_HandIcon );
@@ -164,6 +162,8 @@ public:
 	void SetRect( const QRectF& rRect )
 	{
 		m_qRect = rRect;
+
+		m_HandIcon.SetSize( rRect.width() / 12 );
 	}
 
 	QRectF boundingRect() const

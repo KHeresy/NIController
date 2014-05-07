@@ -95,7 +95,6 @@
     <ClInclude Include="HandControl.h" />
     <ClInclude Include="NIButton.h" />
     <ClInclude Include="NIControl.h" />
-    <ClInclude Include="QNIButton.h" />
     <ClInclude Include="UserMap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
