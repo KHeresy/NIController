@@ -145,6 +145,8 @@ public:
 
 		m_UserSkeleton.m_vPositionShift = QVector2D( w / 2, h * 2.0f / 3 );
 		m_UserSkeleton.m_fScale = 1.0f * w / 1600;
+
+		m_qRect = QRectF( 0, 0, w, h );
 	}
 
 	const nite::SkeletonJoint& GetActiveUserJoint( const nite::JointType& eJoint ) const 
@@ -169,7 +171,7 @@ public:
 
 	QRectF boundingRect() const
 	{
-		return m_UserImage.boundingRect();
+		return m_qRect;
 	}
 
 private:
@@ -177,4 +179,5 @@ private:
 	QGraphicsPixmapItem		m_UserImage;
 	QONI_Skeleton			m_UserSkeleton;
 	QUserDirection			m_UserDirection;
+	QRectF					m_qRect;
 };

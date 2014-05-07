@@ -190,6 +190,11 @@ bool QONI_UserMap::Update()
 		}
 
 		m_UserImage.setPixmap( QPixmap::fromImage( mImage ) );
+		if( w != m_qRect.width() )
+		{
+			m_UserImage.resetTransform();
+			m_UserImage.setScale( m_qRect.width() / w );
+		}
 
 		return bUseUserMap;
 	}

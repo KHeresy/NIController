@@ -111,6 +111,7 @@ private:
 
 private:
 	std::array<unsigned int,2>	m_aResoultion;
+	QRectF			m_qRect;
 	bool			m_bFrameless;
 	EControlHand	m_eControlHand;
 

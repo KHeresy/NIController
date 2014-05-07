@@ -4,6 +4,8 @@ QNIControl::QNIControl( QString sINIFile ) :
 	m_qSetting( sINIFile, QSettings::IniFormat ),
 	QWidget(), m_qScene(), m_qView( &m_qScene, this ), m_qLayout(this), m_mUserMap( m_niUserTracker )
 {
+	m_qRect = QRectF( 0, 0, 640, 480 );
+
 	m_fJointConfidence	= m_qSetting.value( "OpenNI/JointConfidence", 0.5f ).toFloat();
 	m_eControlHand		= NICH_NO_HAND;
 
@@ -100,9 +102,9 @@ bool QNIControl::InitialNIDevice( int w, int h )
 	SetSkeletonSmoothing( m_qSetting.value( "OpenNI/SkeletonSmooth", 0.75f ).toFloat() );
 	#pragma endregion
 
-	resize( m_aResoultion[0], m_aResoultion[1] );
-	m_mUserMap.SetSize( m_aResoultion[0], m_aResoultion[1] );
-	m_mHandControl.SetRect( QRectF( 0, 0, m_aResoultion[0], m_aResoultion[1] ) );
+	resize( m_qRect.width(), m_qRect.height() );
+	m_mUserMap.SetSize( m_qRect.width(), m_qRect.height() );
+	m_mHandControl.SetRect( m_qRect );
 
 	return true;
 }
@@ -185,5 +187,5 @@ void QNIControl::timerEvent( QTimerEvent* pEvent )
 		}
 	}
 
-	m_qView.fitInView( 0, 0, m_aResoultion[0], m_aResoultion[1], Qt::KeepAspectRatio  );
+	m_qView.fitInView( m_qRect, Qt::KeepAspectRatio  );
 }
