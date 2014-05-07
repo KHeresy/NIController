@@ -1,8 +1,5 @@
 #pragma once
 #pragma region Header Files
-// STL Header
-#include <array>
-
 // Qt Header
 #include <QtCore/QSettings>
 #include <QtGui/QtGui>
@@ -16,13 +13,9 @@
 #include "HandControl.h"
 #pragma endregion
 
-// Main Window
+// NIController window
 class QNIControl : public QWidget
 {
-public:
-	float		m_fJointConfidence;
-	QSettings	m_qSetting;
-
 public:
 	QNIControl( QString sINIFile = "" );
 	~QNIControl();
@@ -34,32 +27,28 @@ public:
 	{
 		QString s = m_qSetting.value( "OpenNI/Resolution", "640/480" ).toString();
 		QStringList a = s.split('/');
+		int w = 640, h = 480;
 		if( a.length() == 2 )
 		{
-			m_aResoultion[0] = a[0].toInt();
-			m_aResoultion[1] = a[1].toInt();
+			w = a[0].toInt();
+			h = a[1].toInt();
 		}
-		else
-		{
-			m_aResoultion[0] = 640;
-			m_aResoultion[1] = 480;
-		}
-		return InitialNIDevice( m_aResoultion[0], m_aResoultion[1] );
+		return InitialNIDevice( w, h );
 	}
-
 	bool InitialNIDevice( int w, int h );
 
+	/**
+	 * Start to read data
+	 */
 	void Start()
 	{
 		startTimer( 25 );
 	}
 
+	/**
+	 * Set window as framless (transparence)
+	 */
 	void SetFramless( bool bTrue );
-
-	void SetSkeletonSmoothing( float fValue )
-	{
-		m_niUserTracker.setSkeletonSmoothingFactor( fValue );
-	}
 
 private:
 	bool eventFilter(QObject *object, QEvent *event)
@@ -110,17 +99,20 @@ private:
 	};
 
 private:
-	std::array<unsigned int,2>	m_aResoultion;
-	QRectF			m_qRect;
-	bool			m_bFrameless;
-	EControlHand	m_eControlHand;
+	QRectF			m_qRect;			/**< define the visible range, default 640*480 */
+
+	QSettings		m_qSetting;			/**< INI configuration */
+	float			m_fJointConfidence;	/**< The confidence value of joint position to use */
+
+	bool			m_bFrameless;		/**< Internal flag: if this window is frameless */
+	EControlHand	m_eControlHand;		/**< Internal flag: which hand is used to control now */
 
 	QGraphicsScene	m_qScene;
 	QGraphicsView	m_qView;
 	QGridLayout		m_qLayout;
 
-	QONI_UserMap	m_mUserMap;
-	QHandControl	m_mHandControl;
+	QONI_UserMap	m_mUserMap;			/**< handle the data update of NiTE userTracker, and the drawing of depth map, user map, user skeleton, user direction */
+	QHandControl	m_mHandControl;		/**< handle the hand position analyze, hand icon and buttons update */
 
 	openni::Device		m_niDevice;
 	openni::VideoStream	m_niDepthStream;

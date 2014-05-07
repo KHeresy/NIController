@@ -99,7 +99,7 @@ bool QNIControl::InitialNIDevice( int w, int h )
 		QMessageBox::critical( NULL, "User Tracker", "UserTracker created failed" );
 		return false;
 	}
-	SetSkeletonSmoothing( m_qSetting.value( "OpenNI/SkeletonSmooth", 0.75f ).toFloat() );
+	m_niUserTracker.setSkeletonSmoothingFactor( m_qSetting.value( "OpenNI/SkeletonSmooth", 0.75f ).toFloat() );
 	#pragma endregion
 
 	resize( m_qRect.width(), m_qRect.height() );
