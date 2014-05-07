@@ -101,6 +101,7 @@ bool QNIControl::InitialNIDevice( int w, int h )
 	#pragma endregion
 
 	resize( m_aResoultion[0], m_aResoultion[1] );
+	m_mUserMap.SetSize( m_aResoultion[0], m_aResoultion[1] );
 	m_mHandControl.SetRect( QRectF( 0, 0, m_aResoultion[0], m_aResoultion[1] ) );
 
 	return true;
