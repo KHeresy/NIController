@@ -15,10 +15,12 @@ int main( int argc, char** argv )
 
 	// Qt Window
 	QNIControl qWin( sINIFile );
-	qWin.InitialNIDevice();
-	qWin.show();
+	if( qWin.InitialNIDevice() )
+	{
+		qWin.show();
 
-	// main loop
-	qWin.Start();
-	return qOpenNIApp.exec();
+		// main loop
+		qWin.Start();
+		return qOpenNIApp.exec();
+	}
 }
